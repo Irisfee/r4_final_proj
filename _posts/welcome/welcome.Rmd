@@ -1,13 +1,11 @@
 ---
-title: "Welcome to Final Project"
+title: "Final Project"
 description: |
   Welcome to our new blog, Final Project. We hope you enjoy 
   reading what we have to say!
 author:
-  - name: Nora Jones 
-    url: https://example.com/norajones
-    affiliation: Spacely Sprockets
-    affiliation_url: https://example.com/spacelysprokets
+  - name: Bernice, Peeta, Yufei
+    url: https://irisfee.github.io/r4_final_proj/
 date: 06-05-2020
 output:
   distill::distill_article:
