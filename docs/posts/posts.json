@@ -18,7 +18,7 @@
   {
     "path": "posts/2020-06-06-prelim-fit-2/",
     "title": "prelim-fit-2",
-    "description": "A short description of the post.",
+    "description": "In this post we used random forest to train the model",
     "author": [
       {
         "name": "Nora Jones",
@@ -28,8 +28,8 @@
     "date": "2020-06-06",
     "categories": [],
     "preview": {},
-    "last_modified": "2020-06-06T23:37:19-07:00",
-    "input_file": {}
+    "last_modified": "2020-06-07T11:07:40-07:00",
+    "input_file": "prelim-fit-2.utf8.md"
   },
   {
     "path": "posts/welcome/",
