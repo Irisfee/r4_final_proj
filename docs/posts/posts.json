@@ -12,7 +12,23 @@
     "date": "2020-06-06",
     "categories": [],
     "preview": {},
-    "last_modified": "2020-06-06T14:30:56-07:00",
+    "last_modified": "2020-06-06T23:02:36-07:00",
+    "input_file": {}
+  },
+  {
+    "path": "posts/2020-06-06-prelim-fit-2/",
+    "title": "prelim-fit-2",
+    "description": "A short description of the post.",
+    "author": [
+      {
+        "name": "Nora Jones",
+        "url": "https://example.com/norajones"
+      }
+    ],
+    "date": "2020-06-06",
+    "categories": [],
+    "preview": {},
+    "last_modified": "2020-06-06T23:37:19-07:00",
     "input_file": {}
   },
   {
@@ -28,7 +44,7 @@
     "date": "2020-06-05",
     "categories": [],
     "preview": {},
-    "last_modified": "2020-06-05T22:20:55-07:00",
+    "last_modified": "2020-06-06T23:02:36-07:00",
     "input_file": {}
   }
 ]
