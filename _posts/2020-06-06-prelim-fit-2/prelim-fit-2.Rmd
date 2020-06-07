@@ -1,7 +1,7 @@
 ---
 title: "prelim-fit-2"
 description: |
-  In this post we used random forest to train the model
+  In this post we used random forest to train a regression model that uses a set of predictors to predict individual score. The details of feature selection and training the model (including choosing and tuning hyperparmater) will be discussed in a seperate post. To summarize the performance of the random forest regression model: the OOB RMSE for the full training set is 92.48828, the OOB RMSE for the testing set is 100.5576
 author:
   - name: Peeta Li
     url: https://example.com/norajones
@@ -11,27 +11,33 @@ output:
     self_contained: false
 ---
 
-```{r setup, include=FALSE}
+```{r setup}
 knitr::opts_chunk$set(message = FALSE,
                       warning = FALSE,
                       cache = TRUE,
-                      echo = TRUE)
+                      echo = TRUE,
+                      cache.lazy = FALSE)
+```
 
+Load up our packages
+
+```{r}
 library(tidyverse)
 library(tidymodels)
 library(baguette)
 library(future)
 library(rio)
-
 library(vip)
 library(rpart.plot)
-
+library(tictoc)
+library(future)
 theme_set(theme_minimal())
 ```
 
-read in data 
+read in data - The data consists of 3 parts, 
 
-```{r}
+```{r, linewidth = 40}
+
 frl <- import("https://nces.ed.gov/ccd/Data/zip/ccd_sch_033_1718_l_1a_083118.zip",
               setclass = "tbl_df")  %>% 
   janitor::clean_names()  %>% 
@@ -43,7 +49,9 @@ frl <- import("https://nces.ed.gov/ccd/Data/zip/ccd_sch_033_1718_l_1a_083118.zip
   janitor::clean_names()  %>% 
   mutate(ncessch = as.double(ncessch))
 
-stu_counts <- import("https://github.com/datalorax/ach-gap-variability/raw/master/data/achievement-gaps-geocoded.csv", setclass = "tbl_df")  %>% 
+stu_counts <- import(
+  "https://github.com/datalorax/ach-gap-variability/raw/master/data/achievement-gaps-geocoded.csv", 
+  setclass = "tbl_df")  %>% 
   filter(state == "OR" & year == 1718)  %>% 
   count(ncessch, wt = n)  %>% 
   mutate(ncessch = as.double(ncessch))
@@ -57,9 +65,11 @@ frl <- frl %>%
 # read in train.csv
 math <- read_csv(here::here('data','train.csv')) %>%
   select(-classification) %>% sample_frac(.01)
+
 # read in xlsx
 sheets <- readxl::excel_sheets(here::here('data','fallmembershipreport_20192020.xlsx'))
-ode_schools <- readxl::read_xlsx(here::here('data','fallmembershipreport_20192020.xlsx'), sheet = sheets[4])
+ode_schools <- readxl::read_xlsx(here::here('data','fallmembershipreport_20192020.xlsx'),
+                                 sheet = sheets[4])
 ethnicities <- ode_schools %>% 
   select(attnd_schl_inst_id = `Attending School ID`,
          attnd_dist_inst_id = `Attending District Institution ID`,
@@ -77,13 +87,120 @@ df <- math %>%
 
 ```
 
+Split the data to training and testing sets and do 10 folds CV within training set. 
+
+```{r}
+# split to training and testing
+df_split <- initial_split(df, strata = "score")
+
+# specify training and testing sets
+df_train <- training(df_split) 
+df_test <- testing(df_split)
+
+# cross-validation
+df_cv <- vfold_cv(df_train,  strata = "score")
+
+```
+
+Specfify the recipy recipe
+
+```{r}
+rf_rec <- recipe(score ~ ., df_train) %>%
+  step_mutate(tst_dt = as.numeric(tst_dt)) %>%
+  step_rm(contains('bnch')) %>%
+  update_role(contains('id'), ncessch, sch_name, new_role = 'id') %>%
+  step_novel(all_nominal())  %>%
+  step_unknown(all_nominal(), -all_outcomes()) %>%
+  step_medianimpute(all_numeric()) %>%
+  step_dummy(all_nominal(), -has_role(match = 'id'), -all_outcomes()) %>%
+  step_nzv(all_predictors(), freq_cut = 0, unique_cut = 0)
+  
+rf_rec %>% prep()
+```
+
+Specify the random forest model and and grid for tuning hyperparameter. 
+
+```{r}
+library(ranger)
+(cores <- parallel::detectCores())
+mod_ran <- 
+  rand_forest() %>%
+  set_engine('ranger',
+             num.threads = 7,
+             importance = 'permutation',
+             verbose = T) %>%
+  set_mode('regression') %>%
+  set_args(trees = 1000,
+           mtry = tune(),
+           min_n = tune())
+
+ran_params  <- parameters(mtry(range = c(1,55)), min_n(range = c(1,80)))
+ran_grid <- grid_max_entropy(ran_params, size = 20)
+
+ran_grid %>% 
+  ggplot(aes(mtry, min_n)) +
+  geom_point()
+
+```
+
+Initiate workflow
+
+```{r}
+wf_ran <-  workflow() %>%
+  add_model(mod_ran) %>%
+  add_recipe(rf_rec)
+```
+
+Tune the model with the gird just made 
+
+```{r, cache = TRUE}
+metrics_eval <- metric_set(rmse)
+plan(multisession)
+tic()
+tune_ran <- tune_grid(
+  wf_ran,
+  df_cv,
+  grid = ran_grid,
+  metrics = metrics_eval,
+  control = control_resamples(verbose = TRUE,
+                              save_pred = TRUE,
+                              extract = function(x) x))
+toc()
+
+plan(sequential)
+```
 
 
+```{r}
+tune_ran %>%
+  collect_metrics(summarize = T) %>%
+  ggplot(aes(mtry, mean, color = factor(min_n))) + 
+  geom_point() +
+  ylab('avg_rmse') + 
+  ggtitle('Tunning hyperparameters')
+```
 
+Update model and make predictions to kaggle test set 
 
+```{r}
+## updata the new model
+ran_best <- tune_ran %>%
+  show_best('rmse', n = 1)
 
-Distill is a publication format for scientific and technical writing, native to the web.
+mod_ran_final <- mod_ran %>%
+  finalize_model(ran_best)
 
-Learn more about using Distill at <https://rstudio.github.io/distill>.
+wf_final <- workflow() %>%
+  add_model(mod_ran_final) %>%
+  add_recipe(rf_rec)
 
+# fit full train
+test_mod <- fit(wf_final, data = df_train)
+# OOB rmse for full training 
+sqrt(test_mod$fit$fit$fit$prediction.error)
 
+# prep and bake test
+test <- fit(wf_final, data = df_test)
+# OOB rmse for testing 
+sqrt(test$fit$fit$fit$prediction.error)
+```
