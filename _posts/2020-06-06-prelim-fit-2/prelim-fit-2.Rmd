@@ -85,6 +85,7 @@ math <- left_join(math, ethnicities)
 df <- math %>% 
     left_join(frl)
 
+
 ```
 
 Split the data to training and testing sets and do 10 folds CV within training set. 

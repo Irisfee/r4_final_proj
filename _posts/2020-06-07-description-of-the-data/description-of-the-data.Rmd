@@ -1,0 +1,224 @@
+---
+title: "Description of the data"
+description: |
+  In this post, we will discuss how we select predictors used in our model to predicor individual math score. In addition to the original training set, we selected and merged a few extra predictors that are at higher levels, including staff info, school characteristic, lunch eligibility, directory and membership. The exact procedure and rationale behind choosing those predictors are discussed below. 
+author:
+  - name: Peeta Li, Yufei Zhao, Bernice Cheung
+    url: https://example.com/norajones
+date: 06-07-2020
+output:
+  distill::distill_article:
+    self_contained: false
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r}
+library(tidyverse)
+library(rio)
+library(vip)
+library(skimr)
+library(janitor)
+```
+
+## Create a Merged Dataset
+
+### The original training data set 
+First, we read in the original training set. We then 
+1. Made sure that the 'ncessch' variable is numeric, which will be used for joinning two data sets. 
+2. Removed the classification variable b/c we are going to build a regression model. 
+3. Changed the NA in variables 'lang_cd' and 'ayp_lep' to something meaningful. We did this here instead of in the recipe is that the NAs do have meaning, instead of being unknown. For example, the NAs in 'lang_cd' suggests that one's first language is English, otherwise Spanish. 
+
+```{r}
+# Original training set 
+math <- import(here::here('data','train.csv')) %>% 
+  mutate(ncessch = as.double(ncessch)) %>% 
+  select(-classification) %>%
+  mutate(lang_cd = ifelse(is.na(lang_cd), "E", lang_cd),
+         ayp_lep = ifelse(is.na(ayp_lep), "G", ayp_lep))
+```
+
+Note that all additional data sets were found <https://nces.ed.gov/ccd/files.asp#Fiscal:2,LevelId:7,SchoolYearId:32,Page:1>.
+
+### The Staff Dataset
+Through reading the dictionaries on the varaible names (i.e., documentations), we choose the number of teachers in the STAFF data set. We also select 'ncessch' for data joining purpose. 
+
+```{r}
+# add in extra data 
+# 1) staff
+staff <- import(here::here('data','extra_data','staff','ccd_sch_059_1718_l_1a_083118.csv')) %>%
+  filter(ST == "OR")  %>%
+  select(NCESSCH, TEACHERS) %>% # Teachers: number of teachers (numeric)
+  janitor::clean_names() %>%
+  mutate(ncessch = as.double(ncessch))
+
+```
+
+We then left join the original training set (i.e., math) with the selected staff data set by the variable 'ncessch'. We repeat this left join step for each data set. Thus the repeated step would not be specified below. 
+
+```{r}
+# join math and staff by ncessch
+df <- math %>% 
+  left_join(staff)
+```
+
+### The School Characteristic Dataset
+Merely reading the documentation on this dataset did not help us make sense of which variable we should select. Thus, we made some plots to visualize which categorical predictors in the school-characteristic dataset have influence on individual math score. That is, the averaged math scores differ across different groups in a given categorical predictor.
+
+```{r}
+# 2) scool characteristics
+
+# clean the school characteristic dataset
+schoolDf <- import(here::here('data','extra_data','school_characteristics','ccd_sch_129_1718_w_1a_083118.csv'))%>% 
+  filter(ST == "OR") %>% 
+  janitor::clean_names() %>% 
+  mutate(ncessch = as.double(ncessch)) %>%
+  modify_if(is.character, as.factor)
+
+# Merge with the full dataset
+fullDf <- left_join(math, schoolDf, by= "ncessch") %>%
+  select(score, colnames(schoolDf))
+
+# Plot bar graph to explore the data
+expl <- names(fullDf[,2:21])
+# func for map
+explore_fun <- function(x, y) {
+    ggplot(fullDf, aes(x = .data[[x]], y = .data[[y]]) ) +
+    geom_bar(stat="identity") + 
+    theme_minimal()
+}
+elev_plots <- map(expl, ~explore_fun(.x, "score"))
+```
+
+We explored all variables in the School Characteristic Dataset, stored in the 'elev_plots' variable the chunk above. For demonstration purpose, we only showed one barplot for one of the variables we chose. 
+
+We chose to select the variable 'nslp_status' because the mean of individual math scores differ across different groups in this variable, as illustrated below.
+
+```{r}
+elev_plots[17]
+```
+
+Given the criterion discribed above, we eventually chose variables 'TITLE1_STATUS', indicating title 1 status, 'NSLP_STATUS', indicating national school lunch program and 'Virtual', indicating school virtual status
+
+```{r}
+school_char <- import(here::here('data','extra_data','school_characteristics','ccd_sch_129_1718_w_1a_083118.csv')) %>%
+  filter(ST == "OR")  %>%
+  select(NCESSCH, TITLEI_STATUS, NSLP_STATUS, VIRTUAL) %>% 
+  janitor::clean_names()  %>% 
+  mutate(ncessch = as.double(ncessch))
+
+# join df and school_char by ncessch
+df <- df %>% 
+  left_join(school_char)
+
+```
+
+### The Lunch Eligibility data set
+Here, we basically followed the feature selection procedure we were shown in class, selecting the type of lunch program (i.e., LUNCH_PROGRAM) and the number of student in each lunch program (i.e.,STUDENT_COUNT). We then transformed the data form from long to wide, thus each unique ncessch id has its own row with different columns being differnt lunch programs and the cells are the counts of students. 
+
+```{r}
+# 3) lunch eligibility
+lunch_elig <- import(here::here('data','extra_data','lunch_program_eligibility','ccd_sch_033_1718_l_1a_083118.csv')) %>%
+  filter(ST == "OR")  %>%
+  select(NCESSCH, LUNCH_PROGRAM, STUDENT_COUNT)  %>%
+  janitor::clean_names()  %>% 
+  select(ncessch, lunch_program, student_count)  %>% 
+  mutate(student_count = replace_na(student_count, 0))  %>% 
+  pivot_wider(names_from = lunch_program,
+              values_from = student_count)  %>% 
+  janitor::clean_names()  %>% 
+  mutate(ncessch = as.double(ncessch))
+
+df <- df %>% 
+  left_join(lunch_elig)
+  
+```
+
+### Directory dataset 
+Through reading the documentation for the dataset, we choose the varaibles indicating the type of school (i.e., SCH_TYPE_TEXT) and whether the school is a charter school (i.e., CHARTER_TEXT)
+
+```{r}
+# 4) directory
+directory <- import(here::here('data','extra_data','directory','ccd_sch_029_1718_w_1a_083118.csv')) %>%
+  filter(ST == "OR")  %>%
+  select(NCESSCH, SCH_TYPE_TEXT, CHARTER_TEXT) %>% 
+  janitor::clean_names() %>% 
+  mutate(ncessch = as.double(ncessch))
+
+df <- df %>% 
+  left_join(directory)
+```
+
+### Membership dataset
+Here, we basically followed the feature selection procedure we were shown in class, selecting the school name (i.e., sch_name) and the two Ids for joinning data. 
+
+```{r}
+# 5) membership
+sheets <- readxl::excel_sheets(here::here('data','extra_data','fallmembershipreport_20192020.xlsx'))
+ode_schools <- readxl::read_xlsx(here::here('data','extra_data','fallmembershipreport_20192020.xlsx'),
+                                 sheet = sheets[4])
+ethnicities <- ode_schools %>% 
+  select(attnd_schl_inst_id = `Attending School ID`,
+         attnd_dist_inst_id = `Attending District Institution ID`,
+         sch_name = `School Name`,
+         contains('%')) %>%
+  janitor::clean_names()
+names(ethnicities) <- gsub('x2019_20_percent', 'p', names(ethnicities))
+```
+
+Here we join the membership dataset with the merged df dataset by the two Ids. 
+
+```{r}
+df <- df %>% 
+  left_join(ethnicities) 
+```
+
+## Explore the Merged Dataset
+
+We first changed all character variables into factors and then used {skimr} to get a sense of all predictors we have in the data set.
+
+```{r}
+df <- df%>%
+  modify_if(is.character, as.factor)
+(df_skim <- skim(df))
+```
+
+After skimming the data, we noticed that the variable 'calc_admn_cd' has all NAs, thus we removed this varaible. The remaining dataframe includes in total 56 predicors, among which 34 are categorical and 22 are numerical. 
+
+```{r}
+df <-  df %>%
+  select(-calc_admn_cd)
+```
+
+Then we decided to have a closer look to the distribution of all the categorical variables using {janitor}
+
+```{r}
+factor_vars <- 
+  df_skim %>%
+  filter(skim_type == 'factor') %>%
+  select(skim_variable) 
+
+factor_vars$skim_variable[-34] %>%
+  map(~tabyl(df,.))
+```
+
+Last, we decided to use {vip} to explore the importance for each predictor. To do this we need to first remove all NAs, and categorical predictors that only have one level. 
+
+```{r}
+df_forvip <- df %>%
+  drop_na()
+
+df_forvip <-  df_forvip  %>% 
+  select(-ayp_dist_partic , -rc_dist_partic, -grp_rpt_dist_partic)
+
+vip(lm(score ~ ., df_forvip), mapping = aes(fill = Sign))
+```
+
+We saved this merged dataframe as our training set. The exact same procedure will be applied to the testing set, for which we will generate the predictions using our finalized model. 
+
+```{r, eval = F}
+write.csv(df, 'final_merged_train.csv', row.names = F)
+```
+

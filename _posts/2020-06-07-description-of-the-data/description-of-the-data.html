@@ -1,0 +1,2124 @@
+<!DOCTYPE html>
+
+<html xmlns="http://www.w3.org/1999/xhtml" lang="" xml:lang="">
+
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <meta http-equiv="X-UA-Compatible" content="IE=Edge,chrome=1"/>
+  <meta name="generator" content="distill" />
+
+  <style type="text/css">
+  /* Hide doc at startup (prevent jankiness while JS renders/transforms) */
+  body {
+    visibility: hidden;
+  }
+  </style>
+
+ <!--radix_placeholder_import_source-->
+ <!--/radix_placeholder_import_source-->
+
+  <!--radix_placeholder_meta_tags-->
+  <title>Description of the data</title>
+  
+  <meta property="description" itemprop="description" content="In this post, we will discuss how we select predictors used in our model to predicor individual math score. In addition to the original training set, we selected and merged a few extra predictors that are at higher levels, including staff info, school characteristic, lunch eligibility, directory and membership. The exact procedure and rationale behind choosing those predictors are discussed below."/>
+  
+  
+  <!--  https://schema.org/Article -->
+  <meta property="article:published" itemprop="datePublished" content="2020-06-07"/>
+  <meta property="article:created" itemprop="dateCreated" content="2020-06-07"/>
+  <meta name="article:author" content="Peeta Li, Yufei Zhao, Bernice Cheung"/>
+  
+  <!--  https://developers.facebook.com/docs/sharing/webmasters#markup -->
+  <meta property="og:title" content="Description of the data"/>
+  <meta property="og:type" content="article"/>
+  <meta property="og:description" content="In this post, we will discuss how we select predictors used in our model to predicor individual math score. In addition to the original training set, we selected and merged a few extra predictors that are at higher levels, including staff info, school characteristic, lunch eligibility, directory and membership. The exact procedure and rationale behind choosing those predictors are discussed below."/>
+  <meta property="og:locale" content="en_US"/>
+  
+  <!--  https://dev.twitter.com/cards/types/summary -->
+  <meta property="twitter:card" content="summary"/>
+  <meta property="twitter:title" content="Description of the data"/>
+  <meta property="twitter:description" content="In this post, we will discuss how we select predictors used in our model to predicor individual math score. In addition to the original training set, we selected and merged a few extra predictors that are at higher levels, including staff info, school characteristic, lunch eligibility, directory and membership. The exact procedure and rationale behind choosing those predictors are discussed below."/>
+  
+  <!--/radix_placeholder_meta_tags-->
+  <!--radix_placeholder_rmarkdown_metadata-->
+  
+  <script type="text/json" id="radix-rmarkdown-metadata">
+  {"type":"list","attributes":{"names":{"type":"character","attributes":{},"value":["title","description","author","date","output"]}},"value":[{"type":"character","attributes":{},"value":["Description of the data"]},{"type":"character","attributes":{},"value":["In this post, we will discuss how we select predictors used in our model to predicor individual math score. In addition to the original training set, we selected and merged a few extra predictors that are at higher levels, including staff info, school characteristic, lunch eligibility, directory and membership. The exact procedure and rationale behind choosing those predictors are discussed below. \n"]},{"type":"list","attributes":{},"value":[{"type":"list","attributes":{"names":{"type":"character","attributes":{},"value":["name","url"]}},"value":[{"type":"character","attributes":{},"value":["Peeta Li, Yufei Zhao, Bernice Cheung"]},{"type":"character","attributes":{},"value":["https://example.com/norajones"]}]}]},{"type":"character","attributes":{},"value":["06-07-2020"]},{"type":"list","attributes":{"names":{"type":"character","attributes":{},"value":["distill::distill_article"]}},"value":[{"type":"list","attributes":{"names":{"type":"character","attributes":{},"value":["self_contained"]}},"value":[{"type":"logical","attributes":{},"value":[false]}]}]}]}
+  </script>
+  <!--/radix_placeholder_rmarkdown_metadata-->
+  
+  <script type="text/json" id="radix-resource-manifest">
+  {"type":"character","attributes":{},"value":["description-of-the-data_files/bowser-1.9.3/bowser.min.js","description-of-the-data_files/distill-2.2.21/template.v2.js","description-of-the-data_files/figure-html5/unnamed-chunk-15-1.png","description-of-the-data_files/figure-html5/unnamed-chunk-6-1.png","description-of-the-data_files/jquery-1.11.3/jquery.min.js","description-of-the-data_files/webcomponents-2.0.0/webcomponents.js"]}
+  </script>
+  <!--radix_placeholder_navigation_in_header-->
+  <!--/radix_placeholder_navigation_in_header-->
+  <!--radix_placeholder_distill-->
+  
+  <style type="text/css">
+  
+  body {
+    background-color: white;
+  }
+  
+  .pandoc-table {
+    width: 100%;
+  }
+  
+  .pandoc-table>caption {
+    margin-bottom: 10px;
+  }
+  
+  .pandoc-table th:not([align]) {
+    text-align: left;
+  }
+  
+  .pagedtable-footer {
+    font-size: 15px;
+  }
+  
+  .html-widget {
+    margin-bottom: 2.0em;
+  }
+  
+  .l-screen-inset {
+    padding-right: 16px;
+  }
+  
+  .l-screen .caption {
+    margin-left: 10px;
+  }
+  
+  .shaded {
+    background: rgb(247, 247, 247);
+    padding-top: 20px;
+    padding-bottom: 20px;
+    border-top: 1px solid rgba(0, 0, 0, 0.1);
+    border-bottom: 1px solid rgba(0, 0, 0, 0.1);
+  }
+  
+  .shaded .html-widget {
+    margin-bottom: 0;
+    border: 1px solid rgba(0, 0, 0, 0.1);
+  }
+  
+  .shaded .shaded-content {
+    background: white;
+  }
+  
+  .text-output {
+    margin-top: 0;
+    line-height: 1.5em;
+  }
+  
+  .hidden {
+    display: none !important;
+  }
+  
+  d-article {
+    padding-bottom: 30px;
+  }
+  
+  d-appendix {
+    padding-top: 30px;
+  }
+  
+  d-article>p>img {
+    width: 100%;
+  }
+  
+  d-article iframe {
+    border: 1px solid rgba(0, 0, 0, 0.1);
+    margin-bottom: 2.0em;
+    width: 100%;
+  }
+  
+  figure img.external {
+    background: white;
+    border: 1px solid rgba(0, 0, 0, 0.1);
+    box-shadow: 0 1px 8px rgba(0, 0, 0, 0.1);
+    padding: 18px;
+    box-sizing: border-box;
+  }
+  
+  /* CSS for table of contents */
+  
+  .d-toc {
+    color: rgba(0,0,0,0.8);
+    font-size: 0.8em;
+    line-height: 1em;
+  }
+  
+  .d-toc-header {
+    font-size: 0.6rem;
+    font-weight: 400;
+    color: rgba(0, 0, 0, 0.5);
+    text-transform: uppercase;
+    margin-top: 0;
+    margin-bottom: 1.3em;
+  }
+  
+  .d-toc a {
+    border-bottom: none;
+  }
+  
+  .d-toc ul {
+    padding-left: 0;
+  }
+  
+  .d-toc li>ul {
+    padding-top: 0.8em;
+    padding-left: 16px;
+    margin-bottom: 0.6em;
+  }
+  
+  .d-toc ul,
+  .d-toc li {
+    list-style-type: none;
+  }
+  
+  .d-toc li {
+    margin-bottom: 0.9em;
+  }
+  
+  .d-toc-separator {
+    margin-top: 20px;
+    margin-bottom: 2em;
+  }
+  
+  .d-article-with-toc {
+    border-top: none;
+    padding-top: 0;
+  }
+  
+  
+  
+  /* Tweak code blocks (note that this CSS is repeated above in an injection
+     into the d-code shadow dom) */
+  
+  d-code {
+    overflow-x: auto !important;
+  }
+  
+  pre.d-code code.d-code {
+    padding-left: 10px;
+    font-size: 12px;
+    border-left: 2px solid rgba(0,0,0,0.1);
+  }
+  
+  pre.text-output {
+  
+    font-size: 12px;
+    color: black;
+    background: none;
+    font-family: Consolas, Monaco, 'Andale Mono', 'Ubuntu Mono', monospace;
+    text-align: left;
+    white-space: pre;
+    word-spacing: normal;
+    word-break: normal;
+    word-wrap: normal;
+    line-height: 1.5;
+  
+    -moz-tab-size: 4;
+    -o-tab-size: 4;
+    tab-size: 4;
+  
+    -webkit-hyphens: none;
+    -moz-hyphens: none;
+    -ms-hyphens: none;
+    hyphens: none;
+  }
+  
+  @media(min-width: 768px) {
+  
+  d-code {
+    overflow-x: visible !important;
+  }
+  
+  pre.d-code code.d-code  {
+      padding-left: 18px;
+      font-size: 14px;
+  }
+  pre.text-output {
+    font-size: 14px;
+  }
+  }
+  
+  /* Figure */
+  
+  .figure {
+    position: relative;
+    margin-bottom: 2.5em;
+    margin-top: 1.5em;
+  }
+  
+  .figure img {
+    width: 100%;
+  }
+  
+  .figure .caption {
+    color: rgba(0, 0, 0, 0.6);
+    font-size: 12px;
+    line-height: 1.5em;
+  }
+  
+  .figure img.external {
+    background: white;
+    border: 1px solid rgba(0, 0, 0, 0.1);
+    box-shadow: 0 1px 8px rgba(0, 0, 0, 0.1);
+    padding: 18px;
+    box-sizing: border-box;
+  }
+  
+  .figure .caption a {
+    color: rgba(0, 0, 0, 0.6);
+  }
+  
+  .figure .caption b,
+  .figure .caption strong, {
+    font-weight: 600;
+    color: rgba(0, 0, 0, 1.0);
+  }
+  
+  
+  
+  /* Tweak 1000px media break to show more text */
+  
+  @media(min-width: 1000px) {
+    .base-grid,
+    distill-header,
+    d-title,
+    d-abstract,
+    d-article,
+    d-appendix,
+    distill-appendix,
+    d-byline,
+    d-footnote-list,
+    d-citation-list,
+    distill-footer {
+      grid-template-columns: [screen-start] 1fr [page-start kicker-start] 80px [middle-start] 50px [text-start kicker-end] 65px 65px 65px 65px 65px 65px 65px 65px [text-end gutter-start] 65px [middle-end] 65px [page-end gutter-end] 1fr [screen-end];
+      grid-column-gap: 16px;
+    }
+  
+    .grid {
+      grid-column-gap: 16px;
+    }
+  
+    d-article {
+      font-size: 1.06rem;
+      line-height: 1.7em;
+    }
+    figure .caption, .figure .caption, figure figcaption {
+      font-size: 13px;
+    }
+  }
+  
+  @media(min-width: 1180px) {
+    .base-grid,
+    distill-header,
+    d-title,
+    d-abstract,
+    d-article,
+    d-appendix,
+    distill-appendix,
+    d-byline,
+    d-footnote-list,
+    d-citation-list,
+    distill-footer {
+      grid-template-columns: [screen-start] 1fr [page-start kicker-start] 60px [middle-start] 60px [text-start kicker-end] 60px 60px 60px 60px 60px 60px 60px 60px [text-end gutter-start] 60px [middle-end] 60px [page-end gutter-end] 1fr [screen-end];
+      grid-column-gap: 32px;
+    }
+  
+    .grid {
+      grid-column-gap: 32px;
+    }
+  }
+  
+  
+  /* Get the citation styles for the appendix (not auto-injected on render since
+     we do our own rendering of the citation appendix) */
+  
+  d-appendix .citation-appendix,
+  .d-appendix .citation-appendix {
+    font-size: 11px;
+    line-height: 15px;
+    border-left: 1px solid rgba(0, 0, 0, 0.1);
+    padding-left: 18px;
+    border: 1px solid rgba(0,0,0,0.1);
+    background: rgba(0, 0, 0, 0.02);
+    padding: 10px 18px;
+    border-radius: 3px;
+    color: rgba(150, 150, 150, 1);
+    overflow: hidden;
+    margin-top: -12px;
+    white-space: pre-wrap;
+    word-wrap: break-word;
+  }
+  
+  
+  /* Social footer */
+  
+  .social_footer {
+    margin-top: 30px;
+    margin-bottom: 0;
+    color: rgba(0,0,0,0.67);
+  }
+  
+  .disqus-comments {
+    margin-right: 30px;
+  }
+  
+  .disqus-comment-count {
+    border-bottom: 1px solid rgba(0, 0, 0, 0.4);
+    cursor: pointer;
+  }
+  
+  #disqus_thread {
+    margin-top: 30px;
+  }
+  
+  .article-sharing a {
+    border-bottom: none;
+    margin-right: 8px;
+  }
+  
+  .article-sharing a:hover {
+    border-bottom: none;
+  }
+  
+  .sidebar-section.subscribe {
+    font-size: 12px;
+    line-height: 1.6em;
+  }
+  
+  .subscribe p {
+    margin-bottom: 0.5em;
+  }
+  
+  
+  .article-footer .subscribe {
+    font-size: 15px;
+    margin-top: 45px;
+  }
+  
+  
+  .sidebar-section.custom {
+    font-size: 12px;
+    line-height: 1.6em;
+  }
+  
+  .custom p {
+    margin-bottom: 0.5em;
+  }
+  
+  
+  /* Improve display for browsers without grid (IE/Edge <= 15) */
+  
+  .downlevel {
+    line-height: 1.6em;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen, Ubuntu, Cantarell, "Fira Sans", "Droid Sans", "Helvetica Neue", Arial, sans-serif;
+    margin: 0;
+  }
+  
+  .downlevel .d-title {
+    padding-top: 6rem;
+    padding-bottom: 1.5rem;
+  }
+  
+  .downlevel .d-title h1 {
+    font-size: 50px;
+    font-weight: 700;
+    line-height: 1.1em;
+    margin: 0 0 0.5rem;
+  }
+  
+  .downlevel .d-title p {
+    font-weight: 300;
+    font-size: 1.2rem;
+    line-height: 1.55em;
+    margin-top: 0;
+  }
+  
+  .downlevel .d-byline {
+    padding-top: 0.8em;
+    padding-bottom: 0.8em;
+    font-size: 0.8rem;
+    line-height: 1.8em;
+  }
+  
+  .downlevel .section-separator {
+    border: none;
+    border-top: 1px solid rgba(0, 0, 0, 0.1);
+  }
+  
+  .downlevel .d-article {
+    font-size: 1.06rem;
+    line-height: 1.7em;
+    padding-top: 1rem;
+    padding-bottom: 2rem;
+  }
+  
+  
+  .downlevel .d-appendix {
+    padding-left: 0;
+    padding-right: 0;
+    max-width: none;
+    font-size: 0.8em;
+    line-height: 1.7em;
+    margin-bottom: 0;
+    color: rgba(0,0,0,0.5);
+    padding-top: 40px;
+    padding-bottom: 48px;
+  }
+  
+  .downlevel .footnotes ol {
+    padding-left: 13px;
+  }
+  
+  .downlevel .base-grid,
+  .downlevel .distill-header,
+  .downlevel .d-title,
+  .downlevel .d-abstract,
+  .downlevel .d-article,
+  .downlevel .d-appendix,
+  .downlevel .distill-appendix,
+  .downlevel .d-byline,
+  .downlevel .d-footnote-list,
+  .downlevel .d-citation-list,
+  .downlevel .distill-footer,
+  .downlevel .appendix-bottom,
+  .downlevel .posts-container {
+    padding-left: 40px;
+    padding-right: 40px;
+  }
+  
+  @media(min-width: 768px) {
+    .downlevel .base-grid,
+    .downlevel .distill-header,
+    .downlevel .d-title,
+    .downlevel .d-abstract,
+    .downlevel .d-article,
+    .downlevel .d-appendix,
+    .downlevel .distill-appendix,
+    .downlevel .d-byline,
+    .downlevel .d-footnote-list,
+    .downlevel .d-citation-list,
+    .downlevel .distill-footer,
+    .downlevel .appendix-bottom,
+    .downlevel .posts-container {
+    padding-left: 150px;
+    padding-right: 150px;
+    max-width: 900px;
+  }
+  }
+  
+  .downlevel pre code {
+    display: block;
+    border-left: 2px solid rgba(0, 0, 0, .1);
+    padding: 0 0 0 20px;
+    font-size: 14px;
+  }
+  
+  .downlevel code, .downlevel pre {
+    color: black;
+    background: none;
+    font-family: Consolas, Monaco, 'Andale Mono', 'Ubuntu Mono', monospace;
+    text-align: left;
+    white-space: pre;
+    word-spacing: normal;
+    word-break: normal;
+    word-wrap: normal;
+    line-height: 1.5;
+  
+    -moz-tab-size: 4;
+    -o-tab-size: 4;
+    tab-size: 4;
+  
+    -webkit-hyphens: none;
+    -moz-hyphens: none;
+    -ms-hyphens: none;
+    hyphens: none;
+  }
+  
+  </style>
+  
+  <script type="application/javascript">
+  
+  function is_downlevel_browser() {
+    if (bowser.isUnsupportedBrowser({ msie: "12", msedge: "16"},
+                                   window.navigator.userAgent)) {
+      return true;
+    } else {
+      return window.load_distill_framework === undefined;
+    }
+  }
+  
+  // show body when load is complete
+  function on_load_complete() {
+  
+    // set body to visible
+    document.body.style.visibility = 'visible';
+  
+    // force redraw for leaflet widgets
+    if (window.HTMLWidgets) {
+      var maps = window.HTMLWidgets.findAll(".leaflet");
+      $.each(maps, function(i, el) {
+        var map = this.getMap();
+        map.invalidateSize();
+        map.eachLayer(function(layer) {
+          if (layer instanceof L.TileLayer)
+            layer.redraw();
+        });
+      });
+    }
+  
+    // trigger 'shown' so htmlwidgets resize
+    $('d-article').trigger('shown');
+  }
+  
+  function init_distill() {
+  
+    init_common();
+  
+    // create front matter
+    var front_matter = $('<d-front-matter></d-front-matter>');
+    $('#distill-front-matter').wrap(front_matter);
+  
+    // create d-title
+    $('.d-title').changeElementType('d-title');
+  
+    // create d-byline
+    var byline = $('<d-byline></d-byline>');
+    $('.d-byline').replaceWith(byline);
+  
+    // create d-article
+    var article = $('<d-article></d-article>');
+    $('.d-article').wrap(article).children().unwrap();
+  
+    // move posts container into article
+    $('.posts-container').appendTo($('d-article'));
+  
+    // create d-appendix
+    $('.d-appendix').changeElementType('d-appendix');
+  
+    // create d-bibliography
+    var bibliography = $('<d-bibliography></d-bibliography>');
+    $('#distill-bibliography').wrap(bibliography);
+  
+    // flag indicating that we have appendix items
+    var appendix = $('.appendix-bottom').children('h3').length > 0;
+  
+    // replace citations with <d-cite>
+    $('.citation').each(function(i, val) {
+      appendix = true;
+      var cites = $(this).attr('data-cites').split(" ");
+      var dt_cite = $('<d-cite></d-cite>');
+      dt_cite.attr('key', cites.join());
+      $(this).replaceWith(dt_cite);
+    });
+    // remove refs
+    $('#refs').remove();
+  
+    // replace footnotes with <d-footnote>
+    $('.footnote-ref').each(function(i, val) {
+      appendix = true;
+      var href = $(this).attr('href');
+      var id = href.replace('#', '');
+      var fn = $('#' + id);
+      var fn_p = $('#' + id + '>p');
+      fn_p.find('.footnote-back').remove();
+      var text = fn_p.html();
+      var dtfn = $('<d-footnote></d-footnote>');
+      dtfn.html(text);
+      $(this).replaceWith(dtfn);
+    });
+    // remove footnotes
+    $('.footnotes').remove();
+  
+    $('h1.appendix, h2.appendix').each(function(i, val) {
+      $(this).changeElementType('h3');
+    });
+    $('h3.appendix').each(function(i, val) {
+      var id = $(this).attr('id');
+      $('.d-toc a[href="#' + id + '"]').parent().remove();
+      appendix = true;
+      $(this).nextUntil($('h1, h2, h3')).addBack().appendTo($('d-appendix'));
+    });
+  
+    // show d-appendix if we have appendix content
+    $("d-appendix").css('display', appendix ? 'grid' : 'none');
+  
+    // replace code blocks with d-code
+    $('pre>code').each(function(i, val) {
+      var code = $(this);
+      var pre = code.parent();
+      var clz = "";
+      var language = pre.attr('class');
+      if (language) {
+        // map unknown languages to "clike" (without this they just dissapear)
+        if ($.inArray(language, ["bash", "clike", "css", "go", "html",
+                                 "javascript", "js", "julia", "lua", "markdown",
+                                 "markup", "mathml", "python", "svg", "xml"]) == -1)
+          language = "clike";
+        language = ' language="' + language + '"';
+        var dt_code = $('<d-code block' + language + clz + '></d-code>');
+        dt_code.text(code.text());
+        pre.replaceWith(dt_code);
+      } else {
+        code.addClass('text-output').unwrap().changeElementType('pre');
+      }
+    });
+  
+    // localize layout chunks to just output
+    $('.layout-chunk').each(function(i, val) {
+  
+      // capture layout
+      var layout = $(this).attr('data-layout');
+  
+      // apply layout to markdown level block elements
+      var elements = $(this).children().not('d-code, pre.text-output, script');
+      elements.each(function(i, el) {
+        var layout_div = $('<div class="' + layout + '"></div>');
+        if (layout_div.hasClass('shaded')) {
+          var shaded_content = $('<div class="shaded-content"></div>');
+          $(this).wrap(shaded_content);
+          $(this).parent().wrap(layout_div);
+        } else {
+          $(this).wrap(layout_div);
+        }
+      });
+  
+  
+      // unwrap the layout-chunk div
+      $(this).children().unwrap();
+    });
+  
+    // load distill framework
+    load_distill_framework();
+  
+    // wait for window.distillRunlevel == 4 to do post processing
+    function distill_post_process() {
+  
+      if (!window.distillRunlevel || window.distillRunlevel < 4)
+        return;
+  
+      // hide author/affiliations entirely if we have no authors
+      var front_matter = JSON.parse($("#distill-front-matter").html());
+      var have_authors = front_matter.authors && front_matter.authors.length > 0;
+      if (!have_authors)
+        $('d-byline').addClass('hidden');
+  
+      // table of contents
+      if (have_authors) // adjust border if we are in authors
+        $('.d-toc').parent().addClass('d-article-with-toc');
+  
+      // strip links that point to #
+      $('.authors-affiliations').find('a[href="#"]').removeAttr('href');
+  
+      // hide elements of author/affiliations grid that have no value
+      function hide_byline_column(caption) {
+        $('d-byline').find('h3:contains("' + caption + '")').parent().css('visibility', 'hidden');
+      }
+  
+      // affiliations
+      var have_affiliations = false;
+      for (var i = 0; i<front_matter.authors.length; ++i) {
+        var author = front_matter.authors[i];
+        if (author.affiliation !== "&nbsp;") {
+          have_affiliations = true;
+          break;
+        }
+      }
+      if (!have_affiliations)
+        $('d-byline').find('h3:contains("Affiliations")').css('visibility', 'hidden');
+  
+      // published date
+      if (!front_matter.publishedDate)
+        hide_byline_column("Published");
+  
+      // document object identifier
+      var doi = $('d-byline').find('h3:contains("DOI")');
+      var doi_p = doi.next().empty();
+      if (!front_matter.doi) {
+        // if we have a citation and valid citationText then link to that
+        if ($('#citation').length > 0 && front_matter.citationText) {
+          doi.html('Citation');
+          $('<a href="#citation"></a>')
+            .text(front_matter.citationText)
+            .appendTo(doi_p);
+        } else {
+          hide_byline_column("DOI");
+        }
+      } else {
+        $('<a></a>')
+           .attr('href', "https://doi.org/" + front_matter.doi)
+           .html(front_matter.doi)
+           .appendTo(doi_p);
+      }
+  
+       // change plural form of authors/affiliations
+      if (front_matter.authors.length === 1) {
+        var grid = $('.authors-affiliations');
+        grid.children('h3:contains("Authors")').text('Author');
+        grid.children('h3:contains("Affiliations")').text('Affiliation');
+      }
+  
+      // inject pre code styles (can't do this with a global stylesheet b/c a shadow root is used)
+      $('d-code').each(function(i, val) {
+        var style = document.createElement('style');
+        style.innerHTML = 'pre code { padding-left: 10px; font-size: 12px; border-left: 2px solid rgba(0,0,0,0.1); } ' +
+                          '@media(min-width: 768px) { pre code { padding-left: 18px; font-size: 14px; } }';
+        if (this.shadowRoot)
+          this.shadowRoot.appendChild(style);
+      });
+  
+      // move appendix-bottom entries to the bottom
+      $('.appendix-bottom').appendTo('d-appendix').children().unwrap();
+      $('.appendix-bottom').remove();
+  
+      // clear polling timer
+      clearInterval(tid);
+  
+      // show body now that everything is ready
+      on_load_complete();
+    }
+  
+    var tid = setInterval(distill_post_process, 50);
+    distill_post_process();
+  
+  }
+  
+  function init_downlevel() {
+  
+    init_common();
+  
+     // insert hr after d-title
+    $('.d-title').after($('<hr class="section-separator"/>'));
+  
+    // check if we have authors
+    var front_matter = JSON.parse($("#distill-front-matter").html());
+    var have_authors = front_matter.authors && front_matter.authors.length > 0;
+  
+    // manage byline/border
+    if (!have_authors)
+      $('.d-byline').remove();
+    $('.d-byline').after($('<hr class="section-separator"/>'));
+    $('.d-byline a').remove();
+  
+    // remove toc
+    $('.d-toc-header').remove();
+    $('.d-toc').remove();
+    $('.d-toc-separator').remove();
+  
+    // move appendix elements
+    $('h1.appendix, h2.appendix').each(function(i, val) {
+      $(this).changeElementType('h3');
+    });
+    $('h3.appendix').each(function(i, val) {
+      $(this).nextUntil($('h1, h2, h3')).addBack().appendTo($('.d-appendix'));
+    });
+  
+  
+    // inject headers into references and footnotes
+    var refs_header = $('<h3></h3>');
+    refs_header.text('References');
+    $('#refs').prepend(refs_header);
+  
+    var footnotes_header = $('<h3></h3');
+    footnotes_header.text('Footnotes');
+    $('.footnotes').children('hr').first().replaceWith(footnotes_header);
+  
+    // move appendix-bottom entries to the bottom
+    $('.appendix-bottom').appendTo('.d-appendix').children().unwrap();
+    $('.appendix-bottom').remove();
+  
+    // remove appendix if it's empty
+    if ($('.d-appendix').children().length === 0)
+      $('.d-appendix').remove();
+  
+    // prepend separator above appendix
+    $('.d-appendix').before($('<hr class="section-separator" style="clear: both"/>'));
+  
+    // trim code
+    $('pre>code').each(function(i, val) {
+      $(this).html($.trim($(this).html()));
+    });
+  
+    // move posts-container right before article
+    $('.posts-container').insertBefore($('.d-article'));
+  
+    $('body').addClass('downlevel');
+  
+    on_load_complete();
+  }
+  
+  
+  function init_common() {
+  
+    // jquery plugin to change element types
+    (function($) {
+      $.fn.changeElementType = function(newType) {
+        var attrs = {};
+  
+        $.each(this[0].attributes, function(idx, attr) {
+          attrs[attr.nodeName] = attr.nodeValue;
+        });
+  
+        this.replaceWith(function() {
+          return $("<" + newType + "/>", attrs).append($(this).contents());
+        });
+      };
+    })(jQuery);
+  
+    // prevent underline for linked images
+    $('a > img').parent().css({'border-bottom' : 'none'});
+  
+    // mark non-body figures created by knitr chunks as 100% width
+    $('.layout-chunk').each(function(i, val) {
+      var figures = $(this).find('img, .html-widget');
+      if ($(this).attr('data-layout') !== "l-body") {
+        figures.css('width', '100%');
+      } else {
+        figures.css('max-width', '100%');
+        figures.filter("[width]").each(function(i, val) {
+          var fig = $(this);
+          fig.css('width', fig.attr('width') + 'px');
+        });
+  
+      }
+    });
+  
+    // auto-append index.html to post-preview links in file: protocol
+    // and in rstudio ide preview
+    $('.post-preview').each(function(i, val) {
+      if (window.location.protocol === "file:")
+        $(this).attr('href', $(this).attr('href') + "index.html");
+    });
+  
+    // get rid of index.html references in header
+    if (window.location.protocol !== "file:") {
+      $('.distill-site-header a[href]').each(function(i,val) {
+        $(this).attr('href', $(this).attr('href').replace("index.html", "./"));
+      });
+    }
+  
+    // add class to pandoc style tables
+    $('tr.header').parent('thead').parent('table').addClass('pandoc-table');
+    $('.kable-table').children('table').addClass('pandoc-table');
+  
+    // add figcaption style to table captions
+    $('caption').parent('table').addClass("figcaption");
+  
+    // initialize posts list
+    if (window.init_posts_list)
+      window.init_posts_list();
+  
+    // implmement disqus comment link
+    $('.disqus-comment-count').click(function() {
+      window.headroom_prevent_pin = true;
+      $('#disqus_thread').toggleClass('hidden');
+      if (!$('#disqus_thread').hasClass('hidden')) {
+        var offset = $(this).offset();
+        $(window).resize();
+        $('html, body').animate({
+          scrollTop: offset.top - 35
+        });
+      }
+    });
+  }
+  
+  document.addEventListener('DOMContentLoaded', function() {
+    if (is_downlevel_browser())
+      init_downlevel();
+    else
+      window.addEventListener('WebComponentsReady', init_distill);
+  });
+  
+  </script>
+  
+  <!--/radix_placeholder_distill-->
+  <script src="description-of-the-data_files/jquery-1.11.3/jquery.min.js"></script>
+  <script src="description-of-the-data_files/bowser-1.9.3/bowser.min.js"></script>
+  <script src="description-of-the-data_files/webcomponents-2.0.0/webcomponents.js"></script>
+  <script src="description-of-the-data_files/distill-2.2.21/template.v2.js"></script>
+  <!--radix_placeholder_site_in_header-->
+  <!--/radix_placeholder_site_in_header-->
+
+
+</head>
+
+<body>
+
+<!--radix_placeholder_front_matter-->
+
+<script id="distill-front-matter" type="text/json">
+{"title":"Description of the data","description":"In this post, we will discuss how we select predictors used in our model to predicor individual math score. In addition to the original training set, we selected and merged a few extra predictors that are at higher levels, including staff info, school characteristic, lunch eligibility, directory and membership. The exact procedure and rationale behind choosing those predictors are discussed below.","authors":[{"author":"Peeta Li, Yufei Zhao, Bernice Cheung","authorURL":"https://example.com/norajones","affiliation":"&nbsp;","affiliationURL":"#"}],"publishedDate":"2020-06-07T00:00:00.000-07:00","citationText":"Cheung, 2020"}
+</script>
+
+<!--/radix_placeholder_front_matter-->
+<!--radix_placeholder_navigation_before_body-->
+<!--/radix_placeholder_navigation_before_body-->
+<!--radix_placeholder_site_before_body-->
+<!--/radix_placeholder_site_before_body-->
+
+<div class="d-title">
+<h1>Description of the data</h1>
+<p>In this post, we will discuss how we select predictors used in our model to predicor individual math score. In addition to the original training set, we selected and merged a few extra predictors that are at higher levels, including staff info, school characteristic, lunch eligibility, directory and membership. The exact procedure and rationale behind choosing those predictors are discussed below.</p>
+</div>
+
+<div class="d-byline">
+  Peeta Li, Yufei Zhao, Bernice Cheung <a href="https://example.com/norajones" class="uri">https://example.com/norajones</a> 
+  
+<br/>06-07-2020
+</div>
+
+<div class="d-article">
+<div class="layout-chunk" data-layout="l-body">
+<pre class="r"><code>
+library(tidyverse)
+library(rio)
+library(vip)
+library(skimr)
+library(janitor)</code></pre>
+</div>
+<h2 id="create-a-merged-dataset">Create a Merged Dataset</h2>
+<h3 id="the-original-training-data-set">The original training data set</h3>
+<p>First, we read in the original training set. We then 1. Made sure that the ‘ncessch’ variable is numeric, which will be used for joinning two data sets. 2. Removed the classification variable b/c we are going to build a regression model. 3. Changed the NA in variables ‘lang_cd’ and ‘ayp_lep’ to something meaningful. We did this here instead of in the recipe is that the NAs do have meaning, instead of being unknown. For example, the NAs in ‘lang_cd’ suggests that one’s first language is English, otherwise Spanish.</p>
+<div class="layout-chunk" data-layout="l-body">
+<pre class="r"><code>
+# Original training set 
+math &lt;- import(here::here(&#39;data&#39;,&#39;train.csv&#39;)) %&gt;% 
+  mutate(ncessch = as.double(ncessch)) %&gt;% 
+  select(-classification) %&gt;%
+  mutate(lang_cd = ifelse(is.na(lang_cd), &quot;E&quot;, lang_cd),
+         ayp_lep = ifelse(is.na(ayp_lep), &quot;G&quot;, ayp_lep))</code></pre>
+</div>
+<p>Note that all additional data sets were found <a href="https://nces.ed.gov/ccd/files.asp#Fiscal:2,LevelId:7,SchoolYearId:32,Page:1" class="uri">https://nces.ed.gov/ccd/files.asp#Fiscal:2,LevelId:7,SchoolYearId:32,Page:1</a>.</p>
+<h3 id="the-staff-dataset">The Staff Dataset</h3>
+<p>Through reading the dictionaries on the varaible names (i.e., documentations), we choose the number of teachers in the STAFF data set. We also select ‘ncessch’ for data joining purpose.</p>
+<div class="layout-chunk" data-layout="l-body">
+<pre class="r"><code>
+# add in extra data 
+# 1) staff
+staff &lt;- import(here::here(&#39;data&#39;,&#39;extra_data&#39;,&#39;staff&#39;,&#39;ccd_sch_059_1718_l_1a_083118.csv&#39;)) %&gt;%
+  filter(ST == &quot;OR&quot;)  %&gt;%
+  select(NCESSCH, TEACHERS) %&gt;% # Teachers: number of teachers (numeric)
+  janitor::clean_names() %&gt;%
+  mutate(ncessch = as.double(ncessch))</code></pre>
+</div>
+<p>We then left join the original training set (i.e., math) with the selected staff data set by the variable ‘ncessch’. We repeat this left join step for each data set. Thus the repeated step would not be specified below.</p>
+<div class="layout-chunk" data-layout="l-body">
+<pre class="r"><code>
+# join math and staff by ncessch
+df &lt;- math %&gt;% 
+  left_join(staff)</code></pre>
+</div>
+<h3 id="the-school-characteristic-dataset">The School Characteristic Dataset</h3>
+<p>Merely reading the documentation on this dataset did not help us make sense of which variable we should select. Thus, we made some plots to visualize which categorical predictors in the school-characteristic dataset have influence on individual math score. That is, the averaged math scores differ across different groups in a given categorical predictor.</p>
+<div class="layout-chunk" data-layout="l-body">
+<pre class="r"><code>
+# 2) scool characteristics
+
+# clean the school characteristic dataset
+schoolDf &lt;- import(here::here(&#39;data&#39;,&#39;extra_data&#39;,&#39;school_characteristics&#39;,&#39;ccd_sch_129_1718_w_1a_083118.csv&#39;))%&gt;% 
+  filter(ST == &quot;OR&quot;) %&gt;% 
+  janitor::clean_names() %&gt;% 
+  mutate(ncessch = as.double(ncessch)) %&gt;%
+  modify_if(is.character, as.factor)
+
+# Merge with the full dataset
+fullDf &lt;- left_join(math, schoolDf, by= &quot;ncessch&quot;) %&gt;%
+  select(score, colnames(schoolDf))
+
+# Plot bar graph to explore the data
+expl &lt;- names(fullDf[,2:21])
+# func for map
+explore_fun &lt;- function(x, y) {
+    ggplot(fullDf, aes(x = .data[[x]], y = .data[[y]]) ) +
+    geom_bar(stat=&quot;identity&quot;) + 
+    theme_minimal()
+}
+elev_plots &lt;- map(expl, ~explore_fun(.x, &quot;score&quot;))</code></pre>
+</div>
+<p>We explored all variables in the School Characteristic Dataset, stored in the ‘elev_plots’ variable the chunk above. For demonstration purpose, we only showed one barplot for one of the variables we chose.</p>
+<p>We chose to select the variable ‘nslp_status’ because the mean of individual math scores differ across different groups in this variable, as illustrated below.</p>
+<div class="layout-chunk" data-layout="l-body">
+<pre class="r"><code>
+elev_plots[17]</code></pre>
+<pre><code>
+[[1]]</code></pre>
+<p><img src="description-of-the-data_files/figure-html5/unnamed-chunk-6-1.png" width="624" /></p>
+</div>
+<p>Given the criterion discribed above, we eventually chose variables ‘TITLE1_STATUS’, indicating title 1 status, ‘NSLP_STATUS’, indicating national school lunch program and ‘Virtual’, indicating school virtual status</p>
+<div class="layout-chunk" data-layout="l-body">
+<pre class="r"><code>
+school_char &lt;- import(here::here(&#39;data&#39;,&#39;extra_data&#39;,&#39;school_characteristics&#39;,&#39;ccd_sch_129_1718_w_1a_083118.csv&#39;)) %&gt;%
+  filter(ST == &quot;OR&quot;)  %&gt;%
+  select(NCESSCH, TITLEI_STATUS, NSLP_STATUS, VIRTUAL) %&gt;% 
+  janitor::clean_names()  %&gt;% 
+  mutate(ncessch = as.double(ncessch))
+
+# join df and school_char by ncessch
+df &lt;- df %&gt;% 
+  left_join(school_char)</code></pre>
+</div>
+<h3 id="the-lunch-eligibility-data-set">The Lunch Eligibility data set</h3>
+<p>Here, we basically followed the feature selection procedure we were shown in class, selecting the type of lunch program (i.e., LUNCH_PROGRAM) and the number of student in each lunch program (i.e.,STUDENT_COUNT). We then transformed the data form from long to wide, thus each unique ncessch id has its own row with different columns being differnt lunch programs and the cells are the counts of students.</p>
+<div class="layout-chunk" data-layout="l-body">
+<pre class="r"><code>
+# 3) lunch eligibility
+lunch_elig &lt;- import(here::here(&#39;data&#39;,&#39;extra_data&#39;,&#39;lunch_program_eligibility&#39;,&#39;ccd_sch_033_1718_l_1a_083118.csv&#39;)) %&gt;%
+  filter(ST == &quot;OR&quot;)  %&gt;%
+  select(NCESSCH, LUNCH_PROGRAM, STUDENT_COUNT)  %&gt;%
+  janitor::clean_names()  %&gt;% 
+  select(ncessch, lunch_program, student_count)  %&gt;% 
+  mutate(student_count = replace_na(student_count, 0))  %&gt;% 
+  pivot_wider(names_from = lunch_program,
+              values_from = student_count)  %&gt;% 
+  janitor::clean_names()  %&gt;% 
+  mutate(ncessch = as.double(ncessch))
+
+df &lt;- df %&gt;% 
+  left_join(lunch_elig)</code></pre>
+</div>
+<h3 id="directory-dataset">Directory dataset</h3>
+<p>Through reading the documentation for the dataset, we choose the varaibles indicating the type of school (i.e., SCH_TYPE_TEXT) and whether the school is a charter school (i.e., CHARTER_TEXT)</p>
+<div class="layout-chunk" data-layout="l-body">
+<pre class="r"><code>
+# 4) directory
+directory &lt;- import(here::here(&#39;data&#39;,&#39;extra_data&#39;,&#39;directory&#39;,&#39;ccd_sch_029_1718_w_1a_083118.csv&#39;)) %&gt;%
+  filter(ST == &quot;OR&quot;)  %&gt;%
+  select(NCESSCH, SCH_TYPE_TEXT, CHARTER_TEXT) %&gt;% 
+  janitor::clean_names() %&gt;% 
+  mutate(ncessch = as.double(ncessch))
+
+df &lt;- df %&gt;% 
+  left_join(directory)</code></pre>
+</div>
+<h3 id="membership-dataset">Membership dataset</h3>
+<p>Here, we basically followed the feature selection procedure we were shown in class, selecting the school name (i.e., sch_name) and the two Ids for joinning data.</p>
+<div class="layout-chunk" data-layout="l-body">
+<pre class="r"><code>
+# 5) membership
+sheets &lt;- readxl::excel_sheets(here::here(&#39;data&#39;,&#39;extra_data&#39;,&#39;fallmembershipreport_20192020.xlsx&#39;))
+ode_schools &lt;- readxl::read_xlsx(here::here(&#39;data&#39;,&#39;extra_data&#39;,&#39;fallmembershipreport_20192020.xlsx&#39;),
+                                 sheet = sheets[4])
+ethnicities &lt;- ode_schools %&gt;% 
+  select(attnd_schl_inst_id = `Attending School ID`,
+         attnd_dist_inst_id = `Attending District Institution ID`,
+         sch_name = `School Name`,
+         contains(&#39;%&#39;)) %&gt;%
+  janitor::clean_names()
+names(ethnicities) &lt;- gsub(&#39;x2019_20_percent&#39;, &#39;p&#39;, names(ethnicities))</code></pre>
+</div>
+<p>Here we join the membership dataset with the merged df dataset by the two Ids.</p>
+<div class="layout-chunk" data-layout="l-body">
+<pre class="r"><code>
+df &lt;- df %&gt;% 
+  left_join(ethnicities) </code></pre>
+</div>
+<h2 id="explore-the-merged-dataset">Explore the Merged Dataset</h2>
+<p>We first changed all character variables into factors and then used {skimr} to get a sense of all predictors we have in the data set.</p>
+<div class="layout-chunk" data-layout="l-body">
+<pre class="r"><code>
+df &lt;- df%&gt;%
+  modify_if(is.character, as.factor)
+(df_skim &lt;- skim(df))</code></pre>
+<table>
+<caption><span id="tab:unnamed-chunk-12">Table 1: </span>Data summary</caption>
+<tbody>
+<tr class="odd">
+<td style="text-align: left;">Name</td>
+<td style="text-align: left;">df</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">Number of rows</td>
+<td style="text-align: left;">189426</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">Number of columns</td>
+<td style="text-align: left;">58</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">_______________________</td>
+<td style="text-align: left;"></td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">Column type frequency:</td>
+<td style="text-align: left;"></td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">factor</td>
+<td style="text-align: left;">34</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">logical</td>
+<td style="text-align: left;">1</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">numeric</td>
+<td style="text-align: left;">23</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">________________________</td>
+<td style="text-align: left;"></td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">Group variables</td>
+<td style="text-align: left;">None</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Variable type: factor</strong></p>
+<table>
+<thead>
+<tr class="header">
+<th style="text-align: left;">skim_variable</th>
+<th style="text-align: right;">n_missing</th>
+<th style="text-align: right;">complete_rate</th>
+<th style="text-align: left;">ordered</th>
+<th style="text-align: right;">n_unique</th>
+<th style="text-align: left;">top_counts</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td style="text-align: left;">gndr</td>
+<td style="text-align: right;">0</td>
+<td style="text-align: right;">1.00</td>
+<td style="text-align: left;">FALSE</td>
+<td style="text-align: right;">2</td>
+<td style="text-align: left;">M: 97016, F: 92410</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">ethnic_cd</td>
+<td style="text-align: right;">0</td>
+<td style="text-align: right;">1.00</td>
+<td style="text-align: left;">FALSE</td>
+<td style="text-align: right;">7</td>
+<td style="text-align: left;">W: 115932, H: 45882, M: 11895, A: 7695</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">tst_bnch</td>
+<td style="text-align: right;">0</td>
+<td style="text-align: right;">1.00</td>
+<td style="text-align: left;">FALSE</td>
+<td style="text-align: right;">6</td>
+<td style="text-align: left;">G4: 32773, 2B: 32771, G6: 31639, 1B: 31512</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">tst_dt</td>
+<td style="text-align: right;">0</td>
+<td style="text-align: right;">1.00</td>
+<td style="text-align: left;">FALSE</td>
+<td style="text-align: right;">71</td>
+<td style="text-align: left;">5/2: 14230, 5/2: 14023, 5/2: 13696, 5/1: 11593</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">migrant_ed_fg</td>
+<td style="text-align: right;">0</td>
+<td style="text-align: right;">1.00</td>
+<td style="text-align: left;">FALSE</td>
+<td style="text-align: right;">2</td>
+<td style="text-align: left;">N: 184233, Y: 5193</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">ind_ed_fg</td>
+<td style="text-align: right;">61</td>
+<td style="text-align: right;">1.00</td>
+<td style="text-align: left;">FALSE</td>
+<td style="text-align: right;">3</td>
+<td style="text-align: left;">N: 187195, Y: 2165, y: 5</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">sp_ed_fg</td>
+<td style="text-align: right;">61</td>
+<td style="text-align: right;">1.00</td>
+<td style="text-align: left;">FALSE</td>
+<td style="text-align: right;">2</td>
+<td style="text-align: left;">N: 163771, Y: 25594</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">tag_ed_fg</td>
+<td style="text-align: right;">463</td>
+<td style="text-align: right;">1.00</td>
+<td style="text-align: left;">FALSE</td>
+<td style="text-align: right;">2</td>
+<td style="text-align: left;">N: 178113, Y: 10850</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">econ_dsvntg</td>
+<td style="text-align: right;">531</td>
+<td style="text-align: right;">1.00</td>
+<td style="text-align: left;">FALSE</td>
+<td style="text-align: right;">2</td>
+<td style="text-align: left;">Y: 108853, N: 80042</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">ayp_lep</td>
+<td style="text-align: right;">0</td>
+<td style="text-align: right;">1.00</td>
+<td style="text-align: left;">FALSE</td>
+<td style="text-align: right;">11</td>
+<td style="text-align: left;">G: 151339, F: 15646, Y: 7913, E: 6303</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">stay_in_dist</td>
+<td style="text-align: right;">463</td>
+<td style="text-align: right;">1.00</td>
+<td style="text-align: left;">FALSE</td>
+<td style="text-align: right;">2</td>
+<td style="text-align: left;">Y: 184313, N: 4650</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">stay_in_schl</td>
+<td style="text-align: right;">463</td>
+<td style="text-align: right;">1.00</td>
+<td style="text-align: left;">FALSE</td>
+<td style="text-align: right;">2</td>
+<td style="text-align: left;">Y: 183040, N: 5923</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">dist_sped</td>
+<td style="text-align: right;">463</td>
+<td style="text-align: right;">1.00</td>
+<td style="text-align: left;">FALSE</td>
+<td style="text-align: right;">2</td>
+<td style="text-align: left;">N: 187526, Y: 1437</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">trgt_assist_fg</td>
+<td style="text-align: right;">470</td>
+<td style="text-align: right;">1.00</td>
+<td style="text-align: left;">FALSE</td>
+<td style="text-align: right;">3</td>
+<td style="text-align: left;">N: 180915, Y: 7980, y: 61</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">ayp_dist_partic</td>
+<td style="text-align: right;">0</td>
+<td style="text-align: right;">1.00</td>
+<td style="text-align: left;">FALSE</td>
+<td style="text-align: right;">2</td>
+<td style="text-align: left;">Y: 188895, N: 531</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">ayp_schl_partic</td>
+<td style="text-align: right;">0</td>
+<td style="text-align: right;">1.00</td>
+<td style="text-align: left;">FALSE</td>
+<td style="text-align: right;">2</td>
+<td style="text-align: left;">Y: 187460, N: 1966</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">ayp_dist_prfrm</td>
+<td style="text-align: right;">0</td>
+<td style="text-align: right;">1.00</td>
+<td style="text-align: left;">FALSE</td>
+<td style="text-align: right;">2</td>
+<td style="text-align: left;">Y: 183639, N: 5787</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">ayp_schl_prfrm</td>
+<td style="text-align: right;">0</td>
+<td style="text-align: right;">1.00</td>
+<td style="text-align: left;">FALSE</td>
+<td style="text-align: right;">2</td>
+<td style="text-align: left;">Y: 181097, N: 8329</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">rc_dist_partic</td>
+<td style="text-align: right;">0</td>
+<td style="text-align: right;">1.00</td>
+<td style="text-align: left;">FALSE</td>
+<td style="text-align: right;">2</td>
+<td style="text-align: left;">Y: 188895, N: 531</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">rc_schl_partic</td>
+<td style="text-align: right;">0</td>
+<td style="text-align: right;">1.00</td>
+<td style="text-align: left;">FALSE</td>
+<td style="text-align: right;">2</td>
+<td style="text-align: left;">Y: 187460, N: 1966</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">rc_dist_prfrm</td>
+<td style="text-align: right;">0</td>
+<td style="text-align: right;">1.00</td>
+<td style="text-align: left;">FALSE</td>
+<td style="text-align: right;">2</td>
+<td style="text-align: left;">Y: 183639, N: 5787</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">rc_schl_prfrm</td>
+<td style="text-align: right;">0</td>
+<td style="text-align: right;">1.00</td>
+<td style="text-align: left;">FALSE</td>
+<td style="text-align: right;">2</td>
+<td style="text-align: left;">Y: 181097, N: 8329</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">lang_cd</td>
+<td style="text-align: right;">0</td>
+<td style="text-align: right;">1.00</td>
+<td style="text-align: left;">FALSE</td>
+<td style="text-align: right;">2</td>
+<td style="text-align: left;">E: 185122, S: 4304</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">tst_atmpt_fg</td>
+<td style="text-align: right;">0</td>
+<td style="text-align: right;">1.00</td>
+<td style="text-align: left;">FALSE</td>
+<td style="text-align: right;">2</td>
+<td style="text-align: left;">Y: 188758, P: 668</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">grp_rpt_dist_partic</td>
+<td style="text-align: right;">0</td>
+<td style="text-align: right;">1.00</td>
+<td style="text-align: left;">FALSE</td>
+<td style="text-align: right;">2</td>
+<td style="text-align: left;">Y: 188895, N: 531</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">grp_rpt_schl_partic</td>
+<td style="text-align: right;">0</td>
+<td style="text-align: right;">1.00</td>
+<td style="text-align: left;">FALSE</td>
+<td style="text-align: right;">2</td>
+<td style="text-align: left;">Y: 187460, N: 1966</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">grp_rpt_dist_prfrm</td>
+<td style="text-align: right;">0</td>
+<td style="text-align: right;">1.00</td>
+<td style="text-align: left;">FALSE</td>
+<td style="text-align: right;">2</td>
+<td style="text-align: left;">Y: 188039, N: 1387</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">grp_rpt_schl_prfrm</td>
+<td style="text-align: right;">0</td>
+<td style="text-align: right;">1.00</td>
+<td style="text-align: left;">FALSE</td>
+<td style="text-align: right;">2</td>
+<td style="text-align: left;">Y: 186605, N: 2821</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">titlei_status</td>
+<td style="text-align: right;">3216</td>
+<td style="text-align: right;">0.98</td>
+<td style="text-align: left;">FALSE</td>
+<td style="text-align: right;">3</td>
+<td style="text-align: left;">NOT: 95699, SWE: 79327, TGE: 11184</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">nslp_status</td>
+<td style="text-align: right;">3216</td>
+<td style="text-align: right;">0.98</td>
+<td style="text-align: left;">FALSE</td>
+<td style="text-align: right;">4</td>
+<td style="text-align: left;">NSL: 133179, NSL: 48753, NSL: 3640, NSL: 638</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">virtual</td>
+<td style="text-align: right;">3216</td>
+<td style="text-align: right;">0.98</td>
+<td style="text-align: left;">FALSE</td>
+<td style="text-align: right;">4</td>
+<td style="text-align: left;">NOT: 140151, SUP: 43250, FAC: 1406, FUL: 1403</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">sch_type_text</td>
+<td style="text-align: right;">3216</td>
+<td style="text-align: right;">0.98</td>
+<td style="text-align: left;">FALSE</td>
+<td style="text-align: right;">2</td>
+<td style="text-align: left;">Reg: 185723, Alt: 487</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">charter_text</td>
+<td style="text-align: right;">3216</td>
+<td style="text-align: right;">0.98</td>
+<td style="text-align: left;">FALSE</td>
+<td style="text-align: right;">2</td>
+<td style="text-align: left;">No: 177510, Yes: 8700</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">sch_name</td>
+<td style="text-align: right;">159</td>
+<td style="text-align: right;">1.00</td>
+<td style="text-align: left;">FALSE</td>
+<td style="text-align: right;">1042</td>
+<td style="text-align: left;">Sto: 1103, Mou: 964, Ore: 849, Hap: 800</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Variable type: logical</strong></p>
+<table>
+<thead>
+<tr class="header">
+<th style="text-align: left;">skim_variable</th>
+<th style="text-align: right;">n_missing</th>
+<th style="text-align: right;">complete_rate</th>
+<th style="text-align: right;">mean</th>
+<th style="text-align: left;">count</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td style="text-align: left;">calc_admn_cd</td>
+<td style="text-align: right;">189426</td>
+<td style="text-align: right;">0</td>
+<td style="text-align: right;">NaN</td>
+<td style="text-align: left;">:</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Variable type: numeric</strong></p>
+<table>
+<thead>
+<tr class="header">
+<th style="text-align: left;">skim_variable</th>
+<th style="text-align: right;">n_missing</th>
+<th style="text-align: right;">complete_rate</th>
+<th style="text-align: right;">mean</th>
+<th style="text-align: right;">sd</th>
+<th style="text-align: right;">p0</th>
+<th style="text-align: right;">p25</th>
+<th style="text-align: right;">p50</th>
+<th style="text-align: right;">p75</th>
+<th style="text-align: right;">p100</th>
+<th style="text-align: left;">hist</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td style="text-align: left;">id</td>
+<td style="text-align: right;">0</td>
+<td style="text-align: right;">1.00</td>
+<td style="text-align: right;">1.261905e+05</td>
+<td style="text-align: right;">72879.84</td>
+<td style="text-align: right;">1.000000e+00</td>
+<td style="text-align: right;">6.313525e+04</td>
+<td style="text-align: right;">1.260955e+05</td>
+<td style="text-align: right;">1.892618e+05</td>
+<td style="text-align: right;">2.52568e+05</td>
+<td style="text-align: left;">▇▇▇▇▇</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">attnd_dist_inst_id</td>
+<td style="text-align: right;">0</td>
+<td style="text-align: right;">1.00</td>
+<td style="text-align: right;">2.119070e+03</td>
+<td style="text-align: right;">187.43</td>
+<td style="text-align: right;">1.894000e+03</td>
+<td style="text-align: right;">2.039000e+03</td>
+<td style="text-align: right;">2.142000e+03</td>
+<td style="text-align: right;">2.187000e+03</td>
+<td style="text-align: right;">4.13100e+03</td>
+<td style="text-align: left;">▇▁▁▁▁</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">attnd_schl_inst_id</td>
+<td style="text-align: right;">0</td>
+<td style="text-align: right;">1.00</td>
+<td style="text-align: right;">1.374550e+03</td>
+<td style="text-align: right;">1393.02</td>
+<td style="text-align: right;">1.000000e+00</td>
+<td style="text-align: right;">4.910000e+02</td>
+<td style="text-align: right;">9.340000e+02</td>
+<td style="text-align: right;">1.302000e+03</td>
+<td style="text-align: right;">5.39200e+03</td>
+<td style="text-align: left;">▇▃▁▁▁</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">enrl_grd</td>
+<td style="text-align: right;">0</td>
+<td style="text-align: right;">1.00</td>
+<td style="text-align: right;">5.460000e+00</td>
+<td style="text-align: right;">1.69</td>
+<td style="text-align: right;">3.000000e+00</td>
+<td style="text-align: right;">4.000000e+00</td>
+<td style="text-align: right;">5.000000e+00</td>
+<td style="text-align: right;">7.000000e+00</td>
+<td style="text-align: right;">8.00000e+00</td>
+<td style="text-align: left;">▇▅▃▃▃</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">partic_dist_inst_id</td>
+<td style="text-align: right;">531</td>
+<td style="text-align: right;">1.00</td>
+<td style="text-align: right;">2.119860e+03</td>
+<td style="text-align: right;">190.59</td>
+<td style="text-align: right;">1.894000e+03</td>
+<td style="text-align: right;">2.039000e+03</td>
+<td style="text-align: right;">2.142000e+03</td>
+<td style="text-align: right;">2.188000e+03</td>
+<td style="text-align: right;">5.40100e+03</td>
+<td style="text-align: left;">▇▁▁▁▁</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">partic_schl_inst_id</td>
+<td style="text-align: right;">531</td>
+<td style="text-align: right;">1.00</td>
+<td style="text-align: right;">1.374860e+03</td>
+<td style="text-align: right;">1392.47</td>
+<td style="text-align: right;">1.000000e+00</td>
+<td style="text-align: right;">4.940000e+02</td>
+<td style="text-align: right;">9.340000e+02</td>
+<td style="text-align: right;">1.302000e+03</td>
+<td style="text-align: right;">5.40100e+03</td>
+<td style="text-align: left;">▇▃▁▁▁</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">score</td>
+<td style="text-align: right;">0</td>
+<td style="text-align: right;">1.00</td>
+<td style="text-align: right;">2.498990e+03</td>
+<td style="text-align: right;">115.83</td>
+<td style="text-align: right;">1.601000e+03</td>
+<td style="text-align: right;">2.421000e+03</td>
+<td style="text-align: right;">2.498000e+03</td>
+<td style="text-align: right;">2.576000e+03</td>
+<td style="text-align: right;">3.55000e+03</td>
+<td style="text-align: left;">▁▂▇▁▁</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">ncessch</td>
+<td style="text-align: right;">3216</td>
+<td style="text-align: right;">0.98</td>
+<td style="text-align: right;">4.106934e+11</td>
+<td style="text-align: right;">391895157.93</td>
+<td style="text-align: right;">4.100003e+11</td>
+<td style="text-align: right;">4.102940e+11</td>
+<td style="text-align: right;">4.107500e+11</td>
+<td style="text-align: right;">4.110520e+11</td>
+<td style="text-align: right;">4.11365e+11</td>
+<td style="text-align: left;">▆▃▅▇▃</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">lat</td>
+<td style="text-align: right;">3400</td>
+<td style="text-align: right;">0.98</td>
+<td style="text-align: right;">4.477000e+01</td>
+<td style="text-align: right;">1.02</td>
+<td style="text-align: right;">4.201000e+01</td>
+<td style="text-align: right;">4.417000e+01</td>
+<td style="text-align: right;">4.525000e+01</td>
+<td style="text-align: right;">4.550000e+01</td>
+<td style="text-align: right;">4.61800e+01</td>
+<td style="text-align: left;">▂▁▂▅▇</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">lon</td>
+<td style="text-align: right;">3400</td>
+<td style="text-align: right;">0.98</td>
+<td style="text-align: right;">-1.225200e+02</td>
+<td style="text-align: right;">1.19</td>
+<td style="text-align: right;">-1.245000e+02</td>
+<td style="text-align: right;">-1.230400e+02</td>
+<td style="text-align: right;">-1.228200e+02</td>
+<td style="text-align: right;">-1.225400e+02</td>
+<td style="text-align: right;">-1.16940e+02</td>
+<td style="text-align: left;">▅▇▁▁▁</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">teachers</td>
+<td style="text-align: right;">3216</td>
+<td style="text-align: right;">0.98</td>
+<td style="text-align: right;">2.777000e+01</td>
+<td style="text-align: right;">13.23</td>
+<td style="text-align: right;">2.000000e+00</td>
+<td style="text-align: right;">2.009000e+01</td>
+<td style="text-align: right;">2.595000e+01</td>
+<td style="text-align: right;">3.333000e+01</td>
+<td style="text-align: right;">1.43270e+02</td>
+<td style="text-align: left;">▇▃▁▁▁</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">free_lunch_qualified</td>
+<td style="text-align: right;">3216</td>
+<td style="text-align: right;">0.98</td>
+<td style="text-align: right;">2.277300e+02</td>
+<td style="text-align: right;">146.13</td>
+<td style="text-align: right;">0.000000e+00</td>
+<td style="text-align: right;">1.220000e+02</td>
+<td style="text-align: right;">2.100000e+02</td>
+<td style="text-align: right;">3.060000e+02</td>
+<td style="text-align: right;">8.13000e+02</td>
+<td style="text-align: left;">▇▇▃▁▁</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">reduced_price_lunch_qualified</td>
+<td style="text-align: right;">3216</td>
+<td style="text-align: right;">0.98</td>
+<td style="text-align: right;">3.951000e+01</td>
+<td style="text-align: right;">24.44</td>
+<td style="text-align: right;">0.000000e+00</td>
+<td style="text-align: right;">2.200000e+01</td>
+<td style="text-align: right;">3.600000e+01</td>
+<td style="text-align: right;">5.200000e+01</td>
+<td style="text-align: right;">1.32000e+02</td>
+<td style="text-align: left;">▆▇▃▁▁</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">missing</td>
+<td style="text-align: right;">3216</td>
+<td style="text-align: right;">0.98</td>
+<td style="text-align: right;">0.000000e+00</td>
+<td style="text-align: right;">0.00</td>
+<td style="text-align: right;">0.000000e+00</td>
+<td style="text-align: right;">0.000000e+00</td>
+<td style="text-align: right;">0.000000e+00</td>
+<td style="text-align: right;">0.000000e+00</td>
+<td style="text-align: right;">0.00000e+00</td>
+<td style="text-align: left;">▁▁▇▁▁</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">not_applicable</td>
+<td style="text-align: right;">3216</td>
+<td style="text-align: right;">0.98</td>
+<td style="text-align: right;">0.000000e+00</td>
+<td style="text-align: right;">0.00</td>
+<td style="text-align: right;">0.000000e+00</td>
+<td style="text-align: right;">0.000000e+00</td>
+<td style="text-align: right;">0.000000e+00</td>
+<td style="text-align: right;">0.000000e+00</td>
+<td style="text-align: right;">0.00000e+00</td>
+<td style="text-align: left;">▁▁▇▁▁</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">no_category_codes</td>
+<td style="text-align: right;">3216</td>
+<td style="text-align: right;">0.98</td>
+<td style="text-align: right;">2.672400e+02</td>
+<td style="text-align: right;">164.39</td>
+<td style="text-align: right;">0.000000e+00</td>
+<td style="text-align: right;">1.520000e+02</td>
+<td style="text-align: right;">2.450000e+02</td>
+<td style="text-align: right;">3.560000e+02</td>
+<td style="text-align: right;">9.20000e+02</td>
+<td style="text-align: left;">▆▇▃▁▁</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">p_american_indian_alaska_native</td>
+<td style="text-align: right;">159</td>
+<td style="text-align: right;">1.00</td>
+<td style="text-align: right;">1.000000e-02</td>
+<td style="text-align: right;">0.04</td>
+<td style="text-align: right;">0.000000e+00</td>
+<td style="text-align: right;">0.000000e+00</td>
+<td style="text-align: right;">1.000000e-02</td>
+<td style="text-align: right;">1.000000e-02</td>
+<td style="text-align: right;">8.80000e-01</td>
+<td style="text-align: left;">▇▁▁▁▁</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">p_asian</td>
+<td style="text-align: right;">159</td>
+<td style="text-align: right;">1.00</td>
+<td style="text-align: right;">4.000000e-02</td>
+<td style="text-align: right;">0.07</td>
+<td style="text-align: right;">0.000000e+00</td>
+<td style="text-align: right;">1.000000e-02</td>
+<td style="text-align: right;">1.000000e-02</td>
+<td style="text-align: right;">4.000000e-02</td>
+<td style="text-align: right;">6.20000e-01</td>
+<td style="text-align: left;">▇▁▁▁▁</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">p_native_hawaiian_pacific_islander</td>
+<td style="text-align: right;">159</td>
+<td style="text-align: right;">1.00</td>
+<td style="text-align: right;">1.000000e-02</td>
+<td style="text-align: right;">0.01</td>
+<td style="text-align: right;">0.000000e+00</td>
+<td style="text-align: right;">0.000000e+00</td>
+<td style="text-align: right;">0.000000e+00</td>
+<td style="text-align: right;">1.000000e-02</td>
+<td style="text-align: right;">3.30000e-01</td>
+<td style="text-align: left;">▇▁▁▁▁</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">p_black_african_american</td>
+<td style="text-align: right;">159</td>
+<td style="text-align: right;">1.00</td>
+<td style="text-align: right;">2.000000e-02</td>
+<td style="text-align: right;">0.04</td>
+<td style="text-align: right;">0.000000e+00</td>
+<td style="text-align: right;">0.000000e+00</td>
+<td style="text-align: right;">1.000000e-02</td>
+<td style="text-align: right;">2.000000e-02</td>
+<td style="text-align: right;">5.00000e-01</td>
+<td style="text-align: left;">▇▁▁▁▁</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">p_hispanic_latino</td>
+<td style="text-align: right;">159</td>
+<td style="text-align: right;">1.00</td>
+<td style="text-align: right;">2.400000e-01</td>
+<td style="text-align: right;">0.19</td>
+<td style="text-align: right;">0.000000e+00</td>
+<td style="text-align: right;">1.000000e-01</td>
+<td style="text-align: right;">1.800000e-01</td>
+<td style="text-align: right;">3.300000e-01</td>
+<td style="text-align: right;">1.00000e+00</td>
+<td style="text-align: left;">▇▃▂▁▁</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">p_white</td>
+<td style="text-align: right;">159</td>
+<td style="text-align: right;">1.00</td>
+<td style="text-align: right;">6.100000e-01</td>
+<td style="text-align: right;">0.20</td>
+<td style="text-align: right;">0.000000e+00</td>
+<td style="text-align: right;">4.500000e-01</td>
+<td style="text-align: right;">6.500000e-01</td>
+<td style="text-align: right;">7.700000e-01</td>
+<td style="text-align: right;">1.00000e+00</td>
+<td style="text-align: left;">▁▃▃▇▃</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">p_multiracial</td>
+<td style="text-align: right;">159</td>
+<td style="text-align: right;">1.00</td>
+<td style="text-align: right;">7.000000e-02</td>
+<td style="text-align: right;">0.03</td>
+<td style="text-align: right;">0.000000e+00</td>
+<td style="text-align: right;">4.000000e-02</td>
+<td style="text-align: right;">7.000000e-02</td>
+<td style="text-align: right;">8.000000e-02</td>
+<td style="text-align: right;">3.50000e-01</td>
+<td style="text-align: left;">▇▆▁▁▁</td>
+</tr>
+</tbody>
+</table>
+</div>
+<p>After skimming the data, we noticed that the variable ‘calc_admn_cd’ has all NAs, thus we removed this varaible. The remaining dataframe includes in total 56 predicors, among which 34 are categorical and 22 are numerical.</p>
+<div class="layout-chunk" data-layout="l-body">
+<pre class="r"><code>
+df &lt;-  df %&gt;%
+  select(-calc_admn_cd)</code></pre>
+</div>
+<p>Then we decided to have a closer look to the distribution of all the categorical variables using {janitor}</p>
+<div class="layout-chunk" data-layout="l-body">
+<pre class="r"><code>
+factor_vars &lt;- 
+  df_skim %&gt;%
+  filter(skim_type == &#39;factor&#39;) %&gt;%
+  select(skim_variable) 
+
+factor_vars$skim_variable[-34] %&gt;%
+  map(~tabyl(df,.))</code></pre>
+<pre><code>
+[[1]]
+ gndr     n   percent
+    F 92410 0.4878422
+    M 97016 0.5121578
+
+[[2]]
+ ethnic_cd      n     percent
+         A   7695 0.040622723
+         B   4150 0.021908291
+         H  45882 0.242215958
+         I   2442 0.012891578
+         M  11895 0.062794970
+         P   1430 0.007549122
+         W 115932 0.612017358
+
+[[3]]
+ tst_bnch     n   percent
+       1B 31512 0.1663552
+       2B 32771 0.1730016
+       3B 30257 0.1597299
+       G4 32773 0.1730122
+       G6 31639 0.1670256
+       G7 30474 0.1608755
+
+[[4]]
+            tst_dt     n      percent
+ 2/16/2018 0:00:00     1 5.279106e-06
+ 2/26/2018 0:00:00     1 5.279106e-06
+ 2/28/2018 0:00:00     1 5.279106e-06
+  2/6/2018 0:00:00    14 7.390749e-05
+  2/7/2018 0:00:00    15 7.918660e-05
+  2/8/2018 0:00:00     1 5.279106e-06
+ 3/13/2018 0:00:00     6 3.167464e-05
+ 3/14/2018 0:00:00    14 7.390749e-05
+ 3/15/2018 0:00:00    39 2.058851e-04
+ 3/16/2018 0:00:00    17 8.974481e-05
+ 3/19/2018 0:00:00    35 1.847687e-04
+ 3/20/2018 0:00:00    64 3.378628e-04
+ 3/21/2018 0:00:00    82 4.328867e-04
+ 3/22/2018 0:00:00    69 3.642583e-04
+ 3/23/2018 0:00:00    38 2.006060e-04
+ 3/26/2018 0:00:00     2 1.055821e-05
+ 3/27/2018 0:00:00     7 3.695374e-05
+  3/5/2018 0:00:00     1 5.279106e-06
+  3/6/2018 0:00:00     3 1.583732e-05
+  3/7/2018 0:00:00    19 1.003030e-04
+  3/8/2018 0:00:00    12 6.334928e-05
+  3/9/2018 0:00:00    13 6.862838e-05
+ 4/10/2018 0:00:00   373 1.969107e-03
+ 4/11/2018 0:00:00   497 2.623716e-03
+ 4/12/2018 0:00:00   618 3.262488e-03
+ 4/13/2018 0:00:00   152 8.024242e-04
+ 4/16/2018 0:00:00   668 3.526443e-03
+ 4/17/2018 0:00:00   718 3.790398e-03
+ 4/18/2018 0:00:00   903 4.767033e-03
+ 4/19/2018 0:00:00   877 4.629776e-03
+  4/2/2018 0:00:00    54 2.850717e-04
+ 4/20/2018 0:00:00   559 2.951020e-03
+ 4/23/2018 0:00:00   688 3.632025e-03
+ 4/24/2018 0:00:00  1338 7.063444e-03
+ 4/25/2018 0:00:00  1538 8.119266e-03
+ 4/26/2018 0:00:00  1504 7.939776e-03
+ 4/27/2018 0:00:00   856 4.518915e-03
+  4/3/2018 0:00:00    76 4.012121e-04
+ 4/30/2018 0:00:00  1083 5.717272e-03
+  4/4/2018 0:00:00    90 4.751196e-04
+  4/5/2018 0:00:00   178 9.396809e-04
+  4/6/2018 0:00:00    52 2.745135e-04
+  4/9/2018 0:00:00   215 1.135008e-03
+  5/1/2018 0:00:00  2536 1.338781e-02
+ 5/10/2018 0:00:00  7557 3.989421e-02
+ 5/11/2018 0:00:00  5518 2.913011e-02
+ 5/14/2018 0:00:00  5270 2.782089e-02
+ 5/15/2018 0:00:00  9033 4.768617e-02
+ 5/16/2018 0:00:00  9542 5.037323e-02
+ 5/17/2018 0:00:00 11593 6.120068e-02
+ 5/18/2018 0:00:00  7549 3.985197e-02
+  5/2/2018 0:00:00  3095 1.633883e-02
+ 5/21/2018 0:00:00  8149 4.301944e-02
+ 5/22/2018 0:00:00 13696 7.230264e-02
+ 5/23/2018 0:00:00 14023 7.402891e-02
+ 5/24/2018 0:00:00 14230 7.512168e-02
+ 5/25/2018 0:00:00  7986 4.215894e-02
+ 5/29/2018 0:00:00  6801 3.590320e-02
+  5/3/2018 0:00:00  3149 1.662391e-02
+ 5/30/2018 0:00:00  7411 3.912346e-02
+ 5/31/2018 0:00:00  7062 3.728105e-02
+  5/4/2018 0:00:00  2068 1.091719e-02
+  5/7/2018 0:00:00  3526 1.861413e-02
+  5/8/2018 0:00:00  5120 2.702902e-02
+  5/9/2018 0:00:00  6559 3.462566e-02
+  6/1/2018 0:00:00  4954 2.615269e-02
+  6/4/2018 0:00:00  3718 1.962772e-02
+  6/5/2018 0:00:00  2778 1.466536e-02
+  6/6/2018 0:00:00  1569 8.282918e-03
+  6/7/2018 0:00:00  1009 5.326618e-03
+  6/8/2018 0:00:00   434 2.291132e-03
+
+[[5]]
+ migrant_ed_fg      n   percent
+             N 184233 0.9725856
+             Y   5193 0.0274144
+
+[[6]]
+ ind_ed_fg      n      percent valid_percent
+         N 187195 9.882223e-01  9.885406e-01
+         y      5 2.639553e-05  2.640403e-05
+         Y   2165 1.142927e-02  1.143295e-02
+      &lt;NA&gt;     61 3.220255e-04            NA
+
+[[7]]
+ sp_ed_fg      n      percent valid_percent
+        N 163771 0.8645645265      0.864843
+        Y  25594 0.1351134480      0.135157
+     &lt;NA&gt;     61 0.0003220255            NA
+
+[[8]]
+ tag_ed_fg      n     percent valid_percent
+         N 178113 0.940277470    0.94258135
+         Y  10850 0.057278304    0.05741865
+      &lt;NA&gt;    463 0.002444226            NA
+
+[[9]]
+ econ_dsvntg      n     percent valid_percent
+           N  80042 0.422550231     0.4237381
+           Y 108853 0.574646564     0.5762619
+        &lt;NA&gt;    531 0.002803205            NA
+
+[[10]]
+ ayp_lep      n      percent
+       A    101 0.0005331897
+       B    759 0.0040068417
+       E   6303 0.0332742073
+       F  15646 0.0825968980
+       G 151339 0.7989346763
+       M    163 0.0008604943
+       N   3824 0.0201873027
+       S     95 0.0005015151
+       W    225 0.0011877989
+       X   3058 0.0161435072
+       Y   7913 0.0417735686
+
+[[11]]
+ stay_in_dist      n     percent valid_percent
+            N   4650 0.024547845    0.02460799
+            Y 184313 0.973007929    0.97539201
+         &lt;NA&gt;    463 0.002444226            NA
+
+[[12]]
+ stay_in_schl      n     percent valid_percent
+            N   5923 0.031268147    0.03134476
+            Y 183040 0.966287627    0.96865524
+         &lt;NA&gt;    463 0.002444226            NA
+
+[[13]]
+ dist_sped      n     percent valid_percent
+         N 187526 0.989969698   0.992395337
+         Y   1437 0.007586076   0.007604663
+      &lt;NA&gt;    463 0.002444226            NA
+
+[[14]]
+ trgt_assist_fg      n      percent valid_percent
+              N 180915 0.9550695258  0.9574451195
+              y     61 0.0003220255  0.0003228265
+              Y   7980 0.0421272687  0.0422320540
+           &lt;NA&gt;    470 0.0024811800            NA
+
+[[15]]
+ ayp_dist_partic      n     percent
+               N    531 0.002803205
+               Y 188895 0.997196795
+
+[[16]]
+ ayp_schl_partic      n    percent
+               N   1966 0.01037872
+               Y 187460 0.98962128
+
+[[17]]
+ ayp_dist_prfrm      n    percent
+              N   5787 0.03055019
+              Y 183639 0.96944981
+
+[[18]]
+ ayp_schl_prfrm      n    percent
+              N   8329 0.04396968
+              Y 181097 0.95603032
+
+[[19]]
+ rc_dist_partic      n     percent
+              N    531 0.002803205
+              Y 188895 0.997196795
+
+[[20]]
+ rc_schl_partic      n    percent
+              N   1966 0.01037872
+              Y 187460 0.98962128
+
+[[21]]
+ rc_dist_prfrm      n    percent
+             N   5787 0.03055019
+             Y 183639 0.96944981
+
+[[22]]
+ rc_schl_prfrm      n    percent
+             N   8329 0.04396968
+             Y 181097 0.95603032
+
+[[23]]
+ lang_cd      n    percent
+       E 185122 0.97727873
+       S   4304 0.02272127
+
+[[24]]
+ tst_atmpt_fg      n     percent
+            P    668 0.003526443
+            Y 188758 0.996473557
+
+[[25]]
+ grp_rpt_dist_partic      n     percent
+                   N    531 0.002803205
+                   Y 188895 0.997196795
+
+[[26]]
+ grp_rpt_schl_partic      n    percent
+                   N   1966 0.01037872
+                   Y 187460 0.98962128
+
+[[27]]
+ grp_rpt_dist_prfrm      n     percent
+                  N   1387 0.007322121
+                  Y 188039 0.992677879
+
+[[28]]
+ grp_rpt_schl_prfrm      n    percent
+                  N   2821 0.01489236
+                  Y 186605 0.98510764
+
+[[29]]
+ titlei_status     n    percent valid_percent
+ NOTTITLE1ELIG 95699 0.50520520    0.51393051
+  SWELIGSWPROG 79327 0.41877567    0.42600827
+  TGELGBTGPROG 11184 0.05904153    0.06006122
+          &lt;NA&gt;  3216 0.01697761            NA
+
+[[30]]
+ nslp_status      n    percent valid_percent
+     NSLPCEO  48753 0.25737227   0.261817303
+      NSLPNO   3640 0.01921595   0.019547822
+    NSLPPRO2    638 0.00336807   0.003426239
+   NSLPWOPRO 133179 0.70306610   0.715208635
+        &lt;NA&gt;   3216 0.01697761            NA
+
+[[31]]
+     virtual      n     percent valid_percent
+ FACEVIRTUAL   1406 0.007422424   0.007550615
+ FULLVIRTUAL   1403 0.007406586   0.007534504
+  NOTVIRTUAL 140151 0.739872034   0.752650234
+ SUPPVIRTUAL  43250 0.228321350   0.232264647
+        &lt;NA&gt;   3216 0.016977606            NA
+
+[[32]]
+      sch_type_text      n     percent valid_percent
+ Alternative School    487 0.002570925   0.002615327
+     Regular School 185723 0.980451469   0.997384673
+               &lt;NA&gt;   3216 0.016977606            NA
+
+[[33]]
+ charter_text      n    percent valid_percent
+           No 177510 0.93709417    0.95327856
+          Yes   8700 0.04592823    0.04672144
+         &lt;NA&gt;   3216 0.01697761            NA</code></pre>
+</div>
+<p>Last, we decided to use {vip} to explore the importance for each predictor. To do this we need to first remove all NAs, and categorical predictors that only have one level.</p>
+<div class="layout-chunk" data-layout="l-body">
+<pre class="r"><code>
+df_forvip &lt;- df %&gt;%
+  drop_na()
+
+df_forvip &lt;-  df_forvip  %&gt;% 
+  select(-ayp_dist_partic , -rc_dist_partic, -grp_rpt_dist_partic)
+
+vip(lm(score ~ ., df_forvip), mapping = aes(fill = Sign))</code></pre>
+<p><img src="description-of-the-data_files/figure-html5/unnamed-chunk-15-1.png" width="624" /></p>
+</div>
+<p>We saved this merged dataframe as our training set. The exact same procedure will be applied to the testing set, for which we will generate the predictions using our finalized model.</p>
+<div class="layout-chunk" data-layout="l-body">
+<pre class="r"><code>
+write.csv(df, &#39;final_merged_train.csv&#39;, row.names = F)</code></pre>
+</div>
+<!--radix_placeholder_article_footer-->
+<!--/radix_placeholder_article_footer-->
+</div>
+
+<div class="d-appendix">
+</div>
+
+
+<!--radix_placeholder_site_after_body-->
+<!--/radix_placeholder_site_after_body-->
+<!--radix_placeholder_appendices-->
+<div class="appendix-bottom"></div>
+<!--/radix_placeholder_appendices-->
+<!--radix_placeholder_navigation_after_body-->
+<!--/radix_placeholder_navigation_after_body-->
+
+</body>
+
+</html>

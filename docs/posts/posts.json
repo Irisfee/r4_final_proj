@@ -1,5 +1,21 @@
 [
   {
+    "path": "posts/2020-06-07-description-of-the-data/",
+    "title": "Description of the data",
+    "description": "In this post, we will discuss how we select predictors used in our model to predicor individual math score. In addition to the original training set, we selected and merged a few extra predictors that are at higher levels, including staff info, school characteristic, lunch eligibility, directory and membership. The exact procedure and rationale behind choosing those predictors are discussed below.",
+    "author": [
+      {
+        "name": "Peeta Li, Yufei Zhao, Bernice Cheung",
+        "url": "https://example.com/norajones"
+      }
+    ],
+    "date": "2020-06-07",
+    "categories": [],
+    "preview": "posts/2020-06-07-description-of-the-data/description-of-the-data_files/figure-html5/unnamed-chunk-6-1.png",
+    "last_modified": "2020-06-07T20:13:12-07:00",
+    "input_file": {}
+  },
+  {
     "path": "posts/2020-06-06-prelim-fit-1/",
     "title": "Prelim fit 1",
     "description": "A short description of the post.",
@@ -12,7 +28,7 @@
     "date": "2020-06-06",
     "categories": [],
     "preview": {},
-    "last_modified": "2020-06-06T14:30:56-07:00",
+    "last_modified": "2020-06-06T23:02:36-07:00",
     "input_file": {}
   },
   {
@@ -29,7 +45,7 @@
     "categories": [],
     "preview": "posts/2020-06-06-prelim-fit-2/prelim-fit-2_files/figure-html5/unnamed-chunk-5-1.png",
     "last_modified": "2020-06-07T13:37:21-07:00",
-    "input_file": "prelim-fit-2.utf8.md"
+    "input_file": {}
   },
   {
     "path": "posts/welcome/",
@@ -44,7 +60,7 @@
     "date": "2020-06-05",
     "categories": [],
     "preview": {},
-    "last_modified": "2020-06-05T22:20:55-07:00",
+    "last_modified": "2020-06-06T23:02:36-07:00",
     "input_file": {}
   }
 ]
