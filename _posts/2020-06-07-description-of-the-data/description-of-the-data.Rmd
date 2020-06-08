@@ -1,7 +1,8 @@
 ---
 title: "Description of the data"
 description: |
-  In this post, we will discuss how we select predictors used in our model to predicor individual math score. In addition to the original training set, we selected and merged a few extra predictors that are at higher levels, including staff info, school characteristic, lunch eligibility, directory and membership. The exact procedure and rationale behind choosing those predictors are discussed below. 
+  In this post, we will discuss how we select predictors used in our model to predicor individual math score. In addition to the original training set, we selected and merged a few extra predictors that are at higher levels, including staff info, school characteristic, lunch eligibility, directory and membership. The exact procedure and rationale behind choosing those predictors are discussed below. \
+  Note that this post only discuss the procedure by which we build up our training set. This post does not include details on feature enginerring. The details of building recipes can be found in each prelim fit post individually. 
 author:
   - name: Peeta Li, Yufei Zhao, Bernice Cheung
     url: https://example.com/norajones
@@ -26,21 +27,26 @@ library(janitor)
 ## Create a Merged Dataset
 
 ### The original training data set 
-First, we read in the original training set. We then 
-1. Made sure that the 'ncessch' variable is numeric, which will be used for joinning two data sets. 
-2. Removed the classification variable b/c we are going to build a regression model. 
-3. Changed the NA in variables 'lang_cd' and 'ayp_lep' to something meaningful. We did this here instead of in the recipe is that the NAs do have meaning, instead of being unknown. For example, the NAs in 'lang_cd' suggests that one's first language is English, otherwise Spanish. 
+First, we read in the original training set. We then \
+1. Made sure that the 'ncessch' variable is numeric, which will be used for joinning two data sets. \
+2.Removed the classification variable because we are going to build a regression model. \
+3.Changed the NA in variables 'lang_cd' and 'ayp_lep' to something meaningful. We did this here instead of in the recipe becuase the NAs do have meaning, instead of being unknown. For example, the NAs in 'lang_cd' suggests that one's first language is English, otherwise Spanish. 
+
+The meanings of each variable in the original training dataset listed below.
 
 ```{r}
 # Original training set 
-math <- import(here::here('data','train.csv')) %>% 
+train <- import(here::here('data','train.csv')) %>% 
   mutate(ncessch = as.double(ncessch)) %>% 
   select(-classification) %>%
   mutate(lang_cd = ifelse(is.na(lang_cd), "E", lang_cd),
          ayp_lep = ifelse(is.na(ayp_lep), "G", ayp_lep))
+
+dic <- import(here::here('data', 'data_dictionary.csv'))
+knitr::kable(dic)
 ```
 
-Note that all additional data sets were found <https://nces.ed.gov/ccd/files.asp#Fiscal:2,LevelId:7,SchoolYearId:32,Page:1>.
+Next we imported multiple extra datasets from <https://nces.ed.gov/ccd/files.asp#Fiscal:2,LevelId:7,SchoolYearId:32,Page:1>. We extracted certain predictors from these dataset and merged them to the original training set. The details and rationales are discribed below. 
 
 ### The Staff Dataset
 Through reading the dictionaries on the varaible names (i.e., documentations), we choose the number of teachers in the STAFF data set. We also select 'ncessch' for data joining purpose. 
@@ -56,11 +62,11 @@ staff <- import(here::here('data','extra_data','staff','ccd_sch_059_1718_l_1a_08
 
 ```
 
-We then left join the original training set (i.e., math) with the selected staff data set by the variable 'ncessch'. We repeat this left join step for each data set. Thus the repeated step would not be specified below. 
+We then left join the original training set (i.e., train) with the selected staff data set by the variable 'ncessch'. We repeat this left join step for each data set. Thus the repeated step would not be specified below. 
 
 ```{r}
-# join math and staff by ncessch
-df <- math %>% 
+# join train and staff by ncessch
+df <- train %>% 
   left_join(staff)
 ```
 
@@ -78,7 +84,7 @@ schoolDf <- import(here::here('data','extra_data','school_characteristics','ccd_
   modify_if(is.character, as.factor)
 
 # Merge with the full dataset
-fullDf <- left_join(math, schoolDf, by= "ncessch") %>%
+fullDf <- left_join(train, schoolDf, by= "ncessch") %>%
   select(score, colnames(schoolDf))
 
 # Plot bar graph to explore the data
@@ -116,7 +122,7 @@ df <- df %>%
 ```
 
 ### The Lunch Eligibility data set
-Here, we basically followed the feature selection procedure we were shown in class, selecting the type of lunch program (i.e., LUNCH_PROGRAM) and the number of student in each lunch program (i.e.,STUDENT_COUNT). We then transformed the data form from long to wide, thus each unique ncessch id has its own row with different columns being differnt lunch programs and the cells are the counts of students. 
+Here, we basically followed the feature selection procedure we were shown in class, selecting the type of lunch program (i.e., LUNCH_PROGRAM) and the number of student in each lunch program (i.e.,STUDENT_COUNT). We then transformed the data form from long to wide, thus each unique ncessch id has its own row with different columns being differnt lunch programs and the cells are the counts of students. Followed the class procedure, from online dataset we extracted the number of student in each ncessch. Using the two student count, we calculated the proportion of free lunch (i.e., free_lunch_prp) and the proportion of reduced lunch (i.e., reduced_lunch_prop)
 
 ```{r}
 # 3) lunch eligibility
@@ -130,6 +136,19 @@ lunch_elig <- import(here::here('data','extra_data','lunch_program_eligibility',
               values_from = student_count)  %>% 
   janitor::clean_names()  %>% 
   mutate(ncessch = as.double(ncessch))
+
+stu_counts <- import("https://github.com/datalorax/ach-gap-variability/raw/master/data/achievement-gaps-geocoded.csv",
+                     setclass = "tbl_df")  %>% 
+  filter(state == "OR" & year == 1718)  %>% 
+  count(ncessch, wt = n)  %>% 
+  mutate(ncessch = as.double(ncessch))
+
+lunch_elig <- left_join(lunch_elig, stu_counts)
+
+lunch_elig <- lunch_elig %>% 
+  mutate(free_lunch_prop = free_lunch_qualified / n,
+         reduced_lunch_prop = reduced_price_lunch_qualified / n)  %>% 
+  select(ncessch, ends_with("prop"))
 
 df <- df %>% 
   left_join(lunch_elig)
@@ -150,7 +169,6 @@ directory <- import(here::here('data','extra_data','directory','ccd_sch_029_1718
 df <- df %>% 
   left_join(directory)
 ```
-
 ### Membership dataset
 Here, we basically followed the feature selection procedure we were shown in class, selecting the school name (i.e., sch_name) and the two Ids for joinning data. 
 
@@ -216,9 +234,41 @@ df_forvip <-  df_forvip  %>%
 vip(lm(score ~ ., df_forvip), mapping = aes(fill = Sign))
 ```
 
-We saved this merged dataframe as our training set. The exact same procedure will be applied to the testing set, for which we will generate the predictions using our finalized model. 
+We saved this merged dataframe as our training set. 
 
 ```{r, eval = F}
 write.csv(df, 'final_merged_train.csv', row.names = F)
 ```
 
+The exact same procedure is be applied to the testing set, for which we will generate the predictions using our finalized model. 
+
+```{r, eval = F}
+test <- import(here::here('data','train.csv')) %>% 
+  mutate(ncessch = as.double(ncessch)) %>% 
+  select(-classification) %>%
+  mutate(lang_cd = ifelse(is.na(lang_cd), "E", lang_cd),
+         ayp_lep = ifelse(is.na(ayp_lep), "G", ayp_lep))
+
+# join staff dataser
+test_full <- test %>% 
+  left_join(staff)
+
+# join school characteristic dataset
+test_full <- test_full %>% 
+  left_join(school_char)
+
+# join lunch eligibility dataset
+test_full <- test_full %>% 
+  left_join(lunch_elig)
+
+# join directory dataset
+test_full <- test_full %>% 
+  left_join(directory)
+
+# join membership dataset
+test_full <- test_full %>% 
+  left_join(ethnicities) 
+
+write.csv(test_full, here::here('data','final_merged_test.csv'), row.names = F)
+
+```

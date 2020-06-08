@@ -1342,7 +1342,7 @@ library(janitor)</code></pre>
 <div class="layout-chunk" data-layout="l-body">
 <pre class="r"><code>
 # Original training set 
-math &lt;- import(here::here(&#39;data&#39;,&#39;train.csv&#39;)) %&gt;% 
+train &lt;- import(here::here(&#39;data&#39;,&#39;train.csv&#39;)) %&gt;% 
   mutate(ncessch = as.double(ncessch)) %&gt;% 
   select(-classification) %&gt;%
   mutate(lang_cd = ifelse(is.na(lang_cd), &quot;E&quot;, lang_cd),
@@ -1714,11 +1714,11 @@ staff &lt;- import(here::here(&#39;data&#39;,&#39;extra_data&#39;,&#39;staff&#39
   janitor::clean_names() %&gt;%
   mutate(ncessch = as.double(ncessch))</code></pre>
 </div>
-<p>We then left join the original training set (i.e., math) with the selected staff data set by the variable ‘ncessch’. We repeat this left join step for each data set. Thus the repeated step would not be specified below.</p>
+<p>We then left join the original training set (i.e., train) with the selected staff data set by the variable ‘ncessch’. We repeat this left join step for each data set. Thus the repeated step would not be specified below.</p>
 <div class="layout-chunk" data-layout="l-body">
 <pre class="r"><code>
-# join math and staff by ncessch
-df &lt;- math %&gt;% 
+# join train and staff by ncessch
+df &lt;- train %&gt;% 
   left_join(staff)</code></pre>
 </div>
 <h3 id="the-school-characteristic-dataset">The School Characteristic Dataset</h3>
@@ -1735,7 +1735,7 @@ schoolDf &lt;- import(here::here(&#39;data&#39;,&#39;extra_data&#39;,&#39;school
   modify_if(is.character, as.factor)
 
 # Merge with the full dataset
-fullDf &lt;- left_join(math, schoolDf, by= &quot;ncessch&quot;) %&gt;%
+fullDf &lt;- left_join(train, schoolDf, by= &quot;ncessch&quot;) %&gt;%
   select(score, colnames(schoolDf))
 
 # Plot bar graph to explore the data
@@ -2780,10 +2780,41 @@ df_forvip &lt;-  df_forvip  %&gt;%
 vip(lm(score ~ ., df_forvip), mapping = aes(fill = Sign))</code></pre>
 <p><img src="description-of-the-data_files/figure-html5/unnamed-chunk-15-1.png" width="624" /></p>
 </div>
-<p>We saved this merged dataframe as our training set. The exact same procedure will be applied to the testing set, for which we will generate the predictions using our finalized model.</p>
+<p>We saved this merged dataframe as our training set.</p>
 <div class="layout-chunk" data-layout="l-body">
 <pre class="r"><code>
 write.csv(df, &#39;final_merged_train.csv&#39;, row.names = F)</code></pre>
+</div>
+<p>The exact same procedure is be applied to the testing set, for which we will generate the predictions using our finalized model.</p>
+<div class="layout-chunk" data-layout="l-body">
+<pre class="r"><code>
+test &lt;- import(here::here(&#39;data&#39;,&#39;train.csv&#39;)) %&gt;% 
+  mutate(ncessch = as.double(ncessch)) %&gt;% 
+  select(-classification) %&gt;%
+  mutate(lang_cd = ifelse(is.na(lang_cd), &quot;E&quot;, lang_cd),
+         ayp_lep = ifelse(is.na(ayp_lep), &quot;G&quot;, ayp_lep))
+
+# join staff dataser
+test_full &lt;- test %&gt;% 
+  left_join(staff)
+
+# join school characteristic dataset
+test_full &lt;- test_full %&gt;% 
+  left_join(school_char)
+
+# join lunch eligibility dataset
+test_full &lt;- test_full %&gt;% 
+  left_join(lunch_elig)
+
+# join directory dataset
+test_full &lt;- test_full %&gt;% 
+  left_join(directory)
+
+# join membership dataset
+test_full &lt;- test_full %&gt;% 
+  left_join(ethnicities) 
+
+write.csv(test_full, here::here(&#39;data&#39;,&#39;final_merged_test.csv&#39;), row.names = F)</code></pre>
 </div>
 <!--radix_placeholder_article_footer-->
 <!--/radix_placeholder_article_footer-->
