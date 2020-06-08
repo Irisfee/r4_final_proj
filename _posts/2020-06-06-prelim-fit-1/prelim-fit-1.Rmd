@@ -11,8 +11,9 @@ output:
     self_contained: false
 ---
 
-```{r setup, include=FALSE}
+```{r setup}
 knitr::opts_chunk$set(cache = TRUE)
+set.seed(210)
 ```
 # Read in the data
 * Details about the data can be found in another post
@@ -20,38 +21,28 @@ knitr::opts_chunk$set(cache = TRUE)
 ```{r}
 library(tidyverse)
 
-full_train <- read_csv(here::here("data", "final_merged_training.csv"),
+full_train <- read_csv(here::here("data", "final_merged_train.csv"),
                        col_types = cols(.default = col_guess())) 
 ```
 
 # Split the data
 * Select only 1% of the full training dataset to reduce running time
 * Split the training dataset with `ethinic_cd` as the stratified variable. Following the default setting, 3/4 of the data is included in the `math_train` and the other 1/4 is included in `math_test`
-* Create 10-fold cross-validation `math_cv`. Again, use `ethinic_cd` as the stratified variable
-* We use linear regression as the model
-```{r}
 
+
+```{r}
 library(tidymodels)
-math <- full_train %>% 
-  sample_frac(.01)
+math <- full_train 
 
 math_split <- initial_split(math, strata = "ethnic_cd")
 
 math_train <- training(math_split) 
 math_test <- testing(math_split)
-
-math_cv <- vfold_cv(math_train, strata = "ethnic_cd")
-
-mod <- linear_reg()  %>% 
-  set_mode("regression")  %>% 
-  set_engine("lm")
 ```
 
 # Create the receipe
 
-
-
-The recipe sets six variables to be ID variables, rather than predictors or outcomes, transforms the tst_dt variable to be an actual date, rather than character, assigns an "unknown" level to gndr, ethnic_cd, calc_amdn_cd, and all other nominal variables with missing data, imputes enrl_grd, lat, lon, and all other numeric variables with their median value, removes calc_admn_cd for zero variance, dummy codes gndr, ethnic_cd, and all other nomial predictor variables, and removes near-zero variance predictors such as gndr_unkown, and ethnic_cd_B (the dummy code for students coded Black).
+* We want to do feature selection on several variables (`lat`, `lon`, `tst_dt`) with natural spline. The correlation between score and these three variables are all in waving shape. To set the degree of freedom, we first plot the relationship for each of them with `score`. 
 
 ```{r}
 ggplot(math_train, aes(lat, score)) +
@@ -65,6 +56,27 @@ math_train %>%
   geom_smooth()
 ```
 
+* Based on the shape, we decided to use 10, 9, 7 as the degree of freedom for `lat`, `lon`, and `tst_dt`.
+
+The recipe sets six variables to be ID variables, rather than predictors or outcomes, transforms the tst_dt variable to be an actual date, rather than character, assigns an "unknown" level to gndr, ethnic_cd, calc_amdn_cd, and all other nominal variables with missing data, imputes enrl_grd, lat, lon, and all other numeric variables with their median value, removes calc_admn_cd for zero variance, dummy codes gndr, ethnic_cd, and all other nomial predictor variables, and removes near-zero variance predictors such as gndr_unkown, and ethnic_cd_B (the dummy code for students coded Black).
+
+## Receipe
+
+here we start to make our receipe. Following are the steps:
+
+* mutate `tst_dt` as a date variable and a numeric variable (the numeric variable as a predictor)
+* the date format `tst_dt` was set to have a role of time index
+* sets seven variables to be ID variables
+* for all nominal variables, we first assign a previously unseen factor level to a new level to avoid missing factor level in the training cross-validation sets.
+* for all nominal variables, we then assign an unknown level with missing data.
+* for all numeric variables, we impute with teir median values to handle the missing data.
+* remove near zero variance variables
+* normalize all numeric variables
+* dummy code all the nominal variables
+* remove near zero variance variables again
+* do natural spline on `lat`, `lon`, and `tst_dt_num` with degree of freedom as 10, 9, 7
+* add interaction term: `enrl_grd` and `sp_ed_fg`
+* add interaction term: `ethnic_cd` and proportion of free lunch and reduced price lunch
 
 ```{r}
 rec <- recipe(score ~ ., data = math_train)  %>% 
@@ -75,14 +87,15 @@ rec <- recipe(score ~ ., data = math_train)  %>%
   step_novel(all_nominal())  %>% 
   step_unknown(all_nominal())  %>% 
   step_medianimpute(all_numeric(), -all_outcomes(), -has_role("id vars"))  %>% 
-  step_nzv(all_predictors(), freq_cut = 0, unique_cut = 0) %>% 
-  step_dummy(all_nominal(), -tst_dt)  %>% 
-  step_nzv(all_predictors())  %>% 
+  step_nzv(all_predictors()) %>% 
+  step_normalize(all_numeric(), -all_outcomes(), -has_role("id vars")) %>% 
+  step_dummy(all_nominal(), -tst_dt) %>% 
+  step_nzv(all_predictors()) %>% 
   step_ns(lat, deg_free = 10)  %>% 
   step_ns(lon, deg_free = 9) %>%
   step_ns(tst_dt_num, deg_free = 7)  %>%
-  step_interact(terms = ~ enrl_grd:contains("sp_ed_fg"))%>% 
-  step_interact(terms = ~ starts_with("ethnic"):ends_with("prop"))
+  step_interact(terms = ~ enrl_grd:contains("sp_ed_fg")) %>% 
+  step_interact(terms = ~ starts_with("ethnic"):ends_with("prop")) 
 ```
 
 ```{r}
@@ -92,39 +105,90 @@ rec %>% prep()
 
 ```
 
-```{r}
-
-```
-
-
-```{r}
+## Model fit
+### Describe each model fit, why the given model was selected
+* We use linear penalized regression (elastic net) to fit the model here. Linear regression model is very parsimonious with interpretable results. The coefficients are unbiased, and the variance is low. However, it is sensitive to highly correlated predictors and including irrelevant predictors that may hurt model performance. Thus, we add a penalty. It will penalize the mode lfor coefficients as they move away from zero. It can shrink the coefficients toward zero to reduce the model's variance, balance reduced variance with increased bias, and deal with multicollinerity. Here we use elastic net which combines ridge and lasso penalties. it enables effective regularization with ridge penalty and offers feature selection with lasso penalty. It particularly good at handling multicollinearity.
 
 
+### Hyperparameters to be optimized
 
-geo_params <- 
-  refined_rec2 %>% 
-  parameters() %>% 
-  update(tune_lat = spline_degree(), 
-         tune_lon = spline_degree(),
-         tune_dt  = spline_degree())
-
-spline_grid <- grid_max_entropy(geo_params, size = 50)
-```
+* We tune both the penalty and mixture. Penalty is representing the total amount of regularization. Mixture is representing the proportion of L1 regularization (the lasso)
+* Create 10-fold cross-validation `math_cv` to find the optimal tuning parameter values with grid search. Again, use `ethinic_cd` as the stratified variable 
 
 
 ```{r}
+math_cv <- vfold_cv(math_train, strata = "ethnic_cd")
+
 tune_mod <- linear_reg(penalty = tune(), mixture = tune())  %>% 
   set_mode("regression")  %>% 
   set_engine("glmnet")  
 
 grid_to_tune <- grid_regular(penalty(), mixture(), levels = 25)
+```
 
+### Assumptions of the model (linear penalized regression)
+* The dependent variable is normally distributed
+* There is a linear relationship between the dependent variable and the independent variables
+* The random errors are normally distributed, have constant (equal) variances at any point in X, and are independent
+
+### What the model is doing and why it is appropriate
+Linear regression provide a simple, yet effective, approach to predictive modeling. Moreover, when certain assumptions required by linear regressions are met (e.g., constant variance), the estimated coefficients are unbiased and, of all linear unbiased estimates, have the lowest variance. However, the current data set contains a large number of features. As the number of features grow, certain assumptions typically break down and these models tend to overfit the training data, causing our out of sample error to increase. Regularization methods provide a means to constrain or regularize the estimated coefficients, which can reduce the variance and decrease out of sample error.
+
+### Model evaluation
+* We use RMSE(Root mean square error) to evaluate the model
+
+
+
+```{r}
 enet_tune <- tune_grid(
   tune_mod,
-  refined_rec3,
-  cv, 
+  rec,
+  math_cv, 
   grid = grid_to_tune,
   control = control_resamples(verbose = TRUE)
 )
+
+```
+
+
+```{r}
+show_best(enet_tune, metric = "rmse")
+```
+
+```{r}
+select_best(enet_tune, metric = "rmse")
+```
+
+
+```{r}
+final_mod <- tune_mod  %>% 
+  finalize_model(select_best(enet_tune, metric = "rmse"))
+
+test_fit <- last_fit(final_mod, rec, math_split)
+test_fit$.metrics
+```
+
+```{r}
+prepped_train <- rec  %>% 
+  prep()  %>% 
+  bake(math_train)  %>% 
+  select(-contains("id"), -ncessch, -sch_name, -tst_dt)
+
+real_test <- read_csv("../input/edld-654-spring-2020/test.csv",
+                       col_types = cols(.default = col_guess(), calc_admn_cd = col_character()))  %>% 
+  left_join(frl)
+
+prepped_test <- rec  %>% 
+  prep()  %>% 
+  bake(real_test)
+
+full_train_fit <- fit(final_mod, score ~ ., prepped_train)
+```
+
+
+```{r}
+preds <- predict(full_train_fit, new_data = prepped_test)
+pred_file <- tibble(Id = real_test$id, Predicted = preds$.pred) 
+write_csv(pred_file, "preds-lab4.csv")
 ```
 
