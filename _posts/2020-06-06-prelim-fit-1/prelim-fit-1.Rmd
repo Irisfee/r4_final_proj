@@ -28,7 +28,7 @@ full_train <- read_csv(here::here("data", "final_merged_train.csv"),
 ```
 
 # Split the data
-* Select only 1% of the full training dataset to reduce running time
+
 * Split the training dataset with `ethinic_cd` as the stratified variable. Following the default setting, 3/4 of the data is included in the `math_train` and the other 1/4 is included in `math_test`
 
 
