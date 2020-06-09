@@ -269,6 +269,11 @@ test_full <- test_full %>%
 test_full <- test_full %>% 
   left_join(ethnicities) 
 
+test_full <- test_full%>%
+  modify_if(is.character, as.factor)
+test_full <- test_full %>%
+  select(-calc_admn_cd)
+
 write.csv(test_full, here::here('data','final_merged_test.csv'), row.names = F)
 
 ```
