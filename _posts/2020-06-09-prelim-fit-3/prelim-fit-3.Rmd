@@ -1,0 +1,283 @@
+---
+title: "prelim fit 3"
+description: |
+  In this post, we used stochastic gradient boosting with trees to train a model to predict scores
+author:
+  - name: Bernice Cheung, Peeta Li, Yufei Zhao
+date: 06-09-2020
+output:
+  distill::distill_article:
+    self_contained: false
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(message = FALSE,
+                      warning = FALSE,
+                      cache = TRUE,
+                      echo = TRUE,
+                      cache.lazy = FALSE,
+                      autodep = TRUE)
+
+library(tidyverse)
+library(tidymodels)
+library(doParallel)
+library(skimr)
+library(xgboost)
+library(future)
+
+set.seed(060820)
+```
+
+# Description of the current model
+
+* Description of the current model and our rationales for selecting this model
+  * We chose Stochastic gradient boosting with tree model for the present preliminary fit. This is a sequential fitting algorithm that improves the fit of a shallow decision tree model by a slow learning process guided by the stochastic gradient descent algorithm. 
+  
+We selected this model because this model doesn't assume linearity of the data, and it is commonly seen as the best model for tabular data. 
+
+* Hyperparameters to be optimized  
+  * In total, we tuned 5 parameters. The first parameter is the learning rate, which is the size of the step taken at each iteration during gradient descent. Then we tuned tree depth, which is the number of splits in a tree model. Next, we tune the regularization. Out of the 2 parameters, we chose to tune the loss_reduction, which controls the complexity of a given tree after it's been grown. The last step is to tune the two parameters for the randomness: the number of features and cases for each subsample.  
+  
+* Assumptions of the model  
+  * GMB takes a very general approach to minimize the cost function and doesn't assume any specific distribution of the data. The only assumption is that the observations are independent to each other.  
+  
+* A high-level (think broad audience) description of what the model is doing and why it is appropriate (even as an initial starting point)
+  * This model starts with a shallow decision tree, then iteratively uses the next model to fit the residuals of the model that ensenbles all previous models. To find the optimal solution, it evaluates prediction against a cost function and moves in direction of steepest descent until it reaches a minimum. Even if each tree only learns a little each time, with a help of the gradient descent algorithm, it eventrually minimizes the cost function in a much more general way. Compared to the regular gradient descent boosting tree, our current stochastic model improves predictive accuracy by randomly sample cases for each tree, and randomly sample features at each split. With all 5 hyperparameters, we are able to balance between the cost in computation and model accuracy as well as prevent overfitting. We chose this model because this model fit the data in a very general way and we have a lot of freedom in tuning the hyperparameters.  
+  
+* How we evaluate model performance
+  * We evaluated the random forest model performance by looking at RMSE during cross-validation and the out-of-bag RMSE when fitting the whole training/testing splits.
+
+
+# Fit a stochastic gradient boosting with tree model using 10 fold cross-validation
+
+### Prep the data
+
+Import the final merged training data. Due to our limit in computing power. we only include 5% of the cases
+
+```{r}
+full_train <- read_csv(here::here('data',"final_merged_train.csv"),
+                       col_types = cols(.default = col_guess())) %>%
+  sample_frac(.01)
+```
+
+Split the data into 10 folds with stratified outcome, because the outcome is not normally distributed 
+
+```{r}
+splt <- initial_split(full_train, strata = "score")
+train <- training(splt)
+test <- testing(splt)
+cv <- vfold_cv(train)
+```
+
+
+### Specfify the recipe. For the data engineering part, we did the following (in order): \
+
+* Change the variable 'tst_dt' to dates. \
+* Made a new numeric variable name 'tst_dt_num', which is a numeric version of 'tst_dt', is a predictor. \
+* Update the role of 'tst_dt' to 'time_index', thus not a predictor anymore. \
+* Update the id variables to the new role 'id', thus not a predictor anymore. \
+* Based on our exploration of categorical variables in the description-of-the-data post, many categorical variables have only a few  observations for one or two of their levels. It is possible that the fraction we chose for building the model won't choose any observations in that level, which may cause some problems when making predictions about the testing set. Thus we use step_novel to prevent this from happening. \
+* For nominal variables, we changed all NAs to a new level called unknown. \
+* For numeric variables, we removed all NAs by impute the median value of the varaible. \
+* Remove varaibles that has zero variance. \
+* Dummy code all nominal variables. \
+* In case dummy coding introduce any other variables that have zero variance. \
+* prep the training data with the recipe to make sure everything flows. \
+
+```{r}
+# set a recipe for prepping the data
+rec <- recipe(score ~ ., train) %>%
+  step_mutate(tst_dt = lubridate::mdy_hms(tst_dt),
+              tst_dt_num = as.numeric(tst_dt)) %>%
+  update_role(tst_dt, new_role = "time_index")  %>% 
+  update_role(contains('id'), ncessch, sch_name, new_role = 'id') %>%
+  step_novel(all_nominal())  %>%
+  step_unknown(all_nominal(), -all_outcomes()) %>%
+  step_medianimpute(all_numeric(), -all_outcomes(), -has_role('id')) %>%
+  step_nzv(all_predictors(), freq_cut = 0, unique_cut = 0) %>% 
+  step_dummy(all_nominal(), -has_role(match = 'id'), -tst_dt) %>%
+  step_nzv(all_predictors(), freq_cut = 0, unique_cut = 0) 
+
+# check the recipe by applying it to the training data
+check <- rec %>% prep()
+```
+
+### Fit a default model
+
+In order to evaluate the tuning parameters, we first fit the model with default hyperparameters and compute the average RMSE across 10 folds.
+
+```{r, cache = TRUE}
+# specify a stochastic gradient boosting tree model
+mod <- boost_tree() %>% 
+  set_engine("xgboost", nthread = 8) %>% 
+  set_mode("regression")
+
+# create a workflow with the model and recipy set above
+wf_df <- workflow() %>% 
+  add_recipe(rec) %>% 
+  add_model(mod)
+
+# fit the model with default hyperparameters to the resampled data
+fit_default <- fit_resamples(wf_df, cv)
+
+# evaluate the performance
+collect_metrics(fit_default)
+```
+
+### Tune hyperparameters
+
+#### Learning rate
+
+We started by tuning the learning rate. In order to tune the learning rate, we fix other hyperparameters. For example, we set a large number of trees and an early stopping rule to prevent overfitting. The typical range of the learning rate is from 0.001 to 0.3. Due to the limit in computing power, we rescrited our tuning range from 0.01 to 0.3. 
+
+```{r,cache = TRUE}
+
+cl <- makeCluster(8)
+registerDoParallel(cl)
+# incorporate the updated hyperparameters to the workflow
+tune_lr <- mod %>% 
+  set_args(trees = 5000,
+           learn_rate = tune(),
+           stop_iter = 20,
+           validation = 0.2)
+
+wf_tune_lr <- wf_df %>% 
+  update_model(tune_lr)
+
+# set the tuning grid for learning rate
+grd <- expand.grid(learn_rate = seq(0.005, 0.3, length.out = 20))
+
+# fit the model
+tune_tree_lr <- tune_grid(wf_tune_lr, cv, grid = grd)
+stopCluster(cl)
+
+```
+
+#### Tree depth
+
+After we identify the learning rate that yield the lowest rmse, we incorporate it into the model. Then we started to tune the tree depth for the tree model. Out of the 3 tree related hyperparameters, we only tune tree depth because the optimized number of trees depends on tree depth and niminum n is not very relavent here since all trees are shallow. The normal range of tree depth is less than 9. 
+
+```{r,cache = TRUE}
+
+cl <- makeCluster(8)
+registerDoParallel(cl)
+# update the workflow with optimized learning rate and tuned tree_depth
+tune_depth <- tune_lr %>% 
+  finalize_model(select_best(tune_tree_lr, "rmse")) %>% 
+  set_args(tree_depth = tune())
+
+wf_tune_depth <- wf_df %>% 
+  update_model(tune_depth)
+
+# set the tuning grid for tree_depth
+grd <- expand.grid(tree_depth = seq(1, 8, 1))
+
+# fit the model
+tune_tree_depth <- tune_grid(wf_tune_depth, cv, grid = grd)
+stopCluster(cl)
+
+```
+
+#### Loss reduction
+
+The loss reduction is one of the regularization hyperparameters. It controls the complexity of a given tree after it's been grown and keep the model from overfitting. The common range is 1-20
+
+```{r,cache = TRUE}
+
+cl <- makeCluster(8)
+registerDoParallel(cl)
+# update the workflow with optimized tree depth and tuned loss_reduction
+tune_reg <- tune_depth %>% 
+  finalize_model(select_best(tune_tree_depth, "rmse")) %>% 
+  set_args(loss_reduction = tune())
+
+wf_tune_reg <- wf_df %>% 
+  update_model(tune_reg)
+
+# set the tuning grid for loss_reduction
+grd <- expand.grid(loss_reduction = seq(1, 20, 2))
+
+# fit the model
+tune_tree_reg <- tune_grid(wf_tune_reg, cv, grid = grd)
+stopCluster(cl)
+
+```
+
+#### mTry & sample_size
+
+After we optimize the tree model, we tune the randomness of the model by tuning the proportion of cases for each tree(sample_size) and the number of features for each split (mtry).  The range of these parameters are determined by the total predictors in the sample and the total case in the training dataset. We built the grid with max entropy.
+
+```{r,cache = TRUE}
+
+cl <- makeCluster(8)
+registerDoParallel(cl)
+# update the workflow with optimized tuned loss_reduction and tuned mtry & sample_size
+tune_rand <- tune_reg %>%
+  finalize_model(select_best(tune_tree_reg, "rmse")) %>% 
+  set_args(mtry = tune(),
+           sample_size = tune())
+
+wf_tune_rand <- wf_df %>% 
+  update_model(tune_rand)
+
+# set the tuning grid matrix for both variable
+grd <- grid_max_entropy(finalize(mtry(), juice(prep(rec))), 
+                        sample_size = sample_prop(), 
+                        size = 20)
+
+# fit the model
+tune_tree_rand <- tune_grid(wf_tune_rand, cv, grid = grd)
+
+stopCluster(cl)
+
+```
+
+
+### Finalize the model with optimized  hyperparameters
+
+Now that we optimized the tree model, regularization and randomness, let's look at the model performance. 
+
+```{r}
+show_best(tune_tree_rand, "rmse", n=1)
+```
+
+Update the workflow with all the hyperparameters after tuning
+
+```{r}
+tune_final <- tune_rand %>%
+  finalize_model(select_best(tune_tree_rand, "rmse"))
+  
+wf_final <- wf_df %>% 
+  update_model(tune_final)
+```
+
+### Fit the finalized GBM with the full training and testing dataset
+
+Fit the finalized GBM with the full testing split
+
+```{r}
+registerDoSEQ()
+test_mod <- last_fit(
+  wf_final,
+  split = splt)
+
+test_mod$.metrics
+  
+```
+
+### make prediction about the test set
+
+```{r, eval = F}
+real_test <-  read_csv(here::here("data", "final_merged_test.csv"),
+                       col_types = cols(.default = col_guess())) 
+
+# fit full training 
+full_train_fit <- fit(wf_final,train)
+
+# make prediction:
+preds <- predict(full_train_fit, new_data = real_test)
+
+
+output <- tibble(Id = real_test$id, Predicted = preds$.pred) 
+write_csv(output, here::here('data','predict','preds-prelim3.csv'))
+```

@@ -1,5 +1,21 @@
 [
   {
+    "path": "posts/2020-06-09-prelim-fit-3/",
+    "title": "prelim fit 3",
+    "description": "In this post, we used stochastic gradient boosting with trees to train a model to predict scores",
+    "author": [
+      {
+        "name": "Bernice Cheung, Peeta Li, Yufei Zhao",
+        "url": {}
+      }
+    ],
+    "date": "2020-06-09",
+    "categories": [],
+    "preview": {},
+    "last_modified": "2020-06-09T15:20:52-07:00",
+    "input_file": {}
+  },
+  {
     "path": "posts/2020-06-07-description-of-the-data/",
     "title": "Description of the data",
     "description": "In this post, we will discuss how we select predictors used in our model to predicor individual math score. In addition to the original training set, we selected and merged a few extra predictors that are at higher levels, including staff info, school characteristic, lunch eligibility, directory and membership. The exact procedure and rationale behind choosing those predictors are discussed below. \\\nNote that this post only discuss the procedure by which we build up our training set. This post does not include details on feature enginerring. The details of building recipes can be found in each prelim fit post individually.",
@@ -12,7 +28,7 @@
     "date": "2020-06-07",
     "categories": [],
     "preview": "posts/2020-06-07-description-of-the-data/description-of-the-data_files/figure-html5/unnamed-chunk-6-1.png",
-    "last_modified": "2020-06-08T15:11:22-07:00",
+    "last_modified": "2020-06-08T15:03:24-07:00",
     "input_file": {}
   },
   {
@@ -28,7 +44,7 @@
     "date": "2020-06-06",
     "categories": [],
     "preview": "posts/2020-06-06-prelim-fit-1/prelim-fit-1_files/figure-html5/unnamed-chunk-3-1.png",
-    "last_modified": "2020-06-08T20:37:39-07:00",
+    "last_modified": "2020-06-08T20:50:44-07:00",
     "input_file": {}
   },
   {
@@ -60,7 +76,7 @@
     "date": "2020-06-05",
     "categories": [],
     "preview": {},
-    "last_modified": "2020-06-05T22:20:55-07:00",
+    "last_modified": "2020-06-06T23:02:36-07:00",
     "input_file": {}
   }
 ]
