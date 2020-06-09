@@ -243,7 +243,7 @@ write.csv(df, 'final_merged_train.csv', row.names = F)
 The exact same procedure is be applied to the testing set, for which we will generate the predictions using our finalized model. 
 
 ```{r, eval = F}
-test <- import(here::here('data','train.csv')) %>% 
+test <- import(here::here('data','test.csv')) %>% 
   mutate(ncessch = as.double(ncessch)) %>% 
   select(-classification) %>%
   mutate(lang_cd = ifelse(is.na(lang_cd), "E", lang_cd),

@@ -28,8 +28,8 @@
     "date": "2020-06-07",
     "categories": [],
     "preview": "posts/2020-06-07-description-of-the-data/description-of-the-data_files/figure-html5/unnamed-chunk-6-1.png",
-    "last_modified": "2020-06-08T15:03:24-07:00",
-    "input_file": {}
+    "last_modified": "2020-06-09T16:19:08-07:00",
+    "input_file": "description-of-the-data.utf8.md"
   },
   {
     "path": "posts/2020-06-06-prelim-fit-1/",
@@ -53,15 +53,15 @@
     "description": "In this post we used random forest to train a regression model that the final analytic dataset to predict individual math score.",
     "author": [
       {
-        "name": "Peeta Li",
+        "name": "Peeta Li, Yufei Zhao, Bernice Cheung",
         "url": {}
       }
     ],
     "date": "2020-06-06",
     "categories": [],
     "preview": "posts/2020-06-06-prelim-fit-2/prelim-fit-2_files/figure-html5/unnamed-chunk-8-1.png",
-    "last_modified": "2020-06-08T20:48:07-07:00",
-    "input_file": {}
+    "last_modified": "2020-06-09T16:01:17-07:00",
+    "input_file": "prelim-fit-2.utf8.md"
   },
   {
     "path": "posts/welcome/",

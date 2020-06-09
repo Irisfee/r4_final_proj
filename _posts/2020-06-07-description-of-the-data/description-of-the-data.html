@@ -2438,7 +2438,7 @@ write.csv(df, &#39;final_merged_train.csv&#39;, row.names = F)</code></pre>
 <p>The exact same procedure is be applied to the testing set, for which we will generate the predictions using our finalized model.</p>
 <div class="layout-chunk" data-layout="l-body">
 <pre class="r"><code>
-test &lt;- import(here::here(&#39;data&#39;,&#39;train.csv&#39;)) %&gt;% 
+test &lt;- import(here::here(&#39;data&#39;,&#39;test.csv&#39;)) %&gt;% 
   mutate(ncessch = as.double(ncessch)) %&gt;% 
   select(-classification) %&gt;%
   mutate(lang_cd = ifelse(is.na(lang_cd), &quot;E&quot;, lang_cd),
@@ -2463,6 +2463,11 @@ test_full &lt;- test_full %&gt;%
 # join membership dataset
 test_full &lt;- test_full %&gt;% 
   left_join(ethnicities) 
+
+test_full &lt;- test_full%&gt;%
+  modify_if(is.character, as.factor)
+test_full &lt;- test_full %&gt;%
+  select(-calc_admn_cd)
 
 write.csv(test_full, here::here(&#39;data&#39;,&#39;final_merged_test.csv&#39;), row.names = F)</code></pre>
 </div>
