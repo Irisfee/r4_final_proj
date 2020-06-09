@@ -1,7 +1,7 @@
 ---
 title: "Prelim fit 1"
 description: |
-  A short description of the post.
+  In this post, we used penalty regression to train a model to predict scores
 author:
   - name: Bernice, Peeta, Yufei
     url: https://irisfee.github.io/r4_final_proj/posts/2020-06-06-prelim-fit-1/
@@ -12,7 +12,9 @@ output:
 ---
 
 ```{r setup}
-knitr::opts_chunk$set(cache = TRUE)
+knitr::opts_chunk$set(message = TRUE,
+                      warning = FALSE,
+                      echo = TRUE)
 set.seed(210)
 ```
 # Read in the data
@@ -138,27 +140,34 @@ Linear regression provide a simple, yet effective, approach to predictive modeli
 * We use RMSE(Root mean square error) to evaluate the model
 
 
+### Fit the model
+* Here we fit the model on each cross-validation fold with the receipe `rec`, and the grid `grid_to_tune`.
 
-```{r}
+```{r message = FALSE,warning = FALSE}
 enet_tune <- tune_grid(
   tune_mod,
   rec,
   math_cv, 
-  grid = grid_to_tune,
-  control = control_resamples(verbose = TRUE)
-)
-
+  grid = grid_to_tune)
 ```
 
+
+### Cross-validation results
+
+* here is top five best model parameters (combination of penalty and mixture) that produce the best RMSE reult.
 
 ```{r}
 show_best(enet_tune, metric = "rmse")
 ```
 
+* here is the best parameter combination
+
 ```{r}
 select_best(enet_tune, metric = "rmse")
 ```
 
+### Test on the testing split
+* here we use the best tuned model and apply it on the `math_split` to see the model performance on the testing set
 
 ```{r}
 final_mod <- tune_mod  %>% 
@@ -168,15 +177,18 @@ test_fit <- last_fit(final_mod, rec, math_split)
 test_fit$.metrics
 ```
 
+* as it is shown, the RMSE on the test set is `r test_fit$.metrics[[1]]$.estimate[[1]]`.
+
+
+### Fit the final test set
 ```{r}
 prepped_train <- rec  %>% 
   prep()  %>% 
   bake(math_train)  %>% 
-  select(-contains("id"), -ncessch, -sch_name, -tst_dt)
+  select(-contains("id"), -ncessch, -tst_dt)
 
-real_test <- read_csv("../input/edld-654-spring-2020/test.csv",
-                       col_types = cols(.default = col_guess(), calc_admn_cd = col_character()))  %>% 
-  left_join(frl)
+real_test <-  read_csv(here::here("data", "final_merged_test.csv"),
+                       col_types = cols(.default = col_guess())) 
 
 prepped_test <- rec  %>% 
   prep()  %>% 
@@ -189,6 +201,6 @@ full_train_fit <- fit(final_mod, score ~ ., prepped_train)
 ```{r}
 preds <- predict(full_train_fit, new_data = prepped_test)
 pred_file <- tibble(Id = real_test$id, Predicted = preds$.pred) 
-write_csv(pred_file, "preds-lab4.csv")
+write_csv(pred_file, here::here("data", "predict","preds-prelim1.csv"))
 ```
 

@@ -12,23 +12,23 @@
     "date": "2020-06-07",
     "categories": [],
     "preview": "posts/2020-06-07-description-of-the-data/description-of-the-data_files/figure-html5/unnamed-chunk-6-1.png",
-    "last_modified": "2020-06-08T15:03:24-07:00",
+    "last_modified": "2020-06-08T15:11:22-07:00",
     "input_file": {}
   },
   {
     "path": "posts/2020-06-06-prelim-fit-1/",
     "title": "Prelim fit 1",
-    "description": "A short description of the post.",
+    "description": "In this post, we used penalty regression to train a model to predict scores",
     "author": [
       {
-        "name": "Nora Jones",
-        "url": "https://example.com/norajones"
+        "name": "Bernice, Peeta, Yufei",
+        "url": "https://irisfee.github.io/r4_final_proj/posts/2020-06-06-prelim-fit-1/"
       }
     ],
     "date": "2020-06-06",
     "categories": [],
-    "preview": {},
-    "last_modified": "2020-06-06T23:02:36-07:00",
+    "preview": "posts/2020-06-06-prelim-fit-1/prelim-fit-1_files/figure-html5/unnamed-chunk-3-1.png",
+    "last_modified": "2020-06-08T20:37:39-07:00",
     "input_file": {}
   },
   {
@@ -60,7 +60,7 @@
     "date": "2020-06-05",
     "categories": [],
     "preview": {},
-    "last_modified": "2020-06-06T23:02:36-07:00",
+    "last_modified": "2020-06-05T22:20:55-07:00",
     "input_file": {}
   }
 ]
