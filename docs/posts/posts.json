@@ -12,7 +12,7 @@
     "date": "2020-06-07",
     "categories": [],
     "preview": "posts/2020-06-07-description-of-the-data/description-of-the-data_files/figure-html5/unnamed-chunk-6-1.png",
-    "last_modified": "2020-06-08T15:03:24-07:00",
+    "last_modified": "2020-06-08T15:11:22-07:00",
     "input_file": {}
   },
   {
@@ -21,14 +21,14 @@
     "description": "A short description of the post.",
     "author": [
       {
-        "name": "Nora Jones",
-        "url": "https://example.com/norajones"
+        "name": "Bernice, Peeta, Yufei",
+        "url": "https://irisfee.github.io/r4_final_proj/posts/2020-06-06-prelim-fit-1/"
       }
     ],
     "date": "2020-06-06",
     "categories": [],
-    "preview": {},
-    "last_modified": "2020-06-06T23:02:36-07:00",
+    "preview": "posts/2020-06-06-prelim-fit-1/prelim-fit-1_files/figure-html5/unnamed-chunk-3-1.png",
+    "last_modified": "2020-06-08T19:59:29-07:00",
     "input_file": {}
   },
   {
@@ -44,7 +44,7 @@
     "date": "2020-06-06",
     "categories": [],
     "preview": "posts/2020-06-06-prelim-fit-2/prelim-fit-2_files/figure-html5/unnamed-chunk-5-1.png",
-    "last_modified": "2020-06-07T13:37:21-07:00",
+    "last_modified": "2020-06-07T13:45:38-07:00",
     "input_file": {}
   },
   {
@@ -60,7 +60,7 @@
     "date": "2020-06-05",
     "categories": [],
     "preview": {},
-    "last_modified": "2020-06-06T23:02:36-07:00",
+    "last_modified": "2020-06-05T22:20:55-07:00",
     "input_file": {}
   }
 ]
