@@ -3,7 +3,7 @@ title: "prelim fit 2"
 description: |
   In this post we used random forest to train a regression model that the final analytic dataset to predict individual math score. 
 author:
-  - name: Peeta Li
+  - name: Peeta Li, Yufei Zhao, Bernice Cheung
 date: 06-06-2020
 output:
   distill::distill_article:
@@ -13,7 +13,7 @@ output:
 ```{r setup}
 knitr::opts_chunk$set(message = FALSE,
                       warning = FALSE,
-                      cache = F,
+                      cache = FALSE,
                       echo = TRUE,
                       cache.lazy = FALSE)
 ```
@@ -52,7 +52,7 @@ theme_set(theme_minimal())
 
 ### Read in the final merged training data, the exact percedure of the selecting each variables in the merged training data can be found in a the post of the description of the data. 
 
-```{r, linewidth = 40}
+```{r}
 # read in the final merged data
 df <- import(here::here('data','final_merged_train.csv')) %>%
   sample_frac(.05)
@@ -136,7 +136,7 @@ wf_ran <-  workflow() %>%
 
 ### Tune the model
 
-```{r, cache = F}
+```{r, cache = FALSE}
 metrics_eval <- metric_set(rmse)
 plan(multisession)
 tic()
@@ -177,23 +177,34 @@ mod_ran_final <- mod_ran %>%
 wf_final <- workflow() %>%
   add_model(mod_ran_final) %>%
   add_recipe(rf_rec)
+
+ran_best
 ```
 
 ### Fit the whole training split and look at the RMSE for the out of bag data
 
 ```{r}
-# fit full train
-test_mod <- fit(wf_final, data = df_train)
-# OOB rmse for full training 
-sqrt(test_mod$fit$fit$fit$prediction.error)
+# final fit 
+finalized_fit <- last_fit(
+  wf_final,
+  split = df_split)
+
+finalized_fit$.metrics
 ```
 
-### Fit the whole testing split and look at the RMSE for the out of bag data
-
+### make predictions about the new testing set 
 ```{r}
-# prep and bake test
-test <- fit(wf_final, data = df_test)
-# OOB rmse for testing 
-sqrt(test$fit$fit$fit$prediction.error)
+real_test <-  read_csv(here::here("data", "final_merged_test.csv"),
+                       col_types = cols(.default = col_guess())) 
+
+# fit full training 
+full_train_fit <- fit(wf_final,df_train)
+
+# make prediction:
+preds <- predict(full_train_fit, new_data = real_test)
+
+
+output <- tibble(Id = real_test$id, Predicted = preds$.pred) 
+write_csv(output, here::here('data','predict','preds-prelim2.csv'))
 ```
 

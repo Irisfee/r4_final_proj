@@ -1,3 +1,18 @@
+<<<<<<< HEAD
 unnamed-chunk-1	full_train	read_csv	here	cols	col_guess	%>%	sample_frac
 unnamed-chunk-2	splt	initial_split	full_train	train	training	test	testing	cv	vfold_cv
 unnamed-chunk-3	rec	recipe	score	.	train	%>%	step_mutate	mdy_hms	tst_dt	as.numeric	update_role	contains	ncessch	sch_name	step_novel	all_nominal	step_unknown	all_outcomes	step_medianimpute	all_numeric	has_role	step_nzv	all_predictors	step_dummy	check	prep
+=======
+unnamed-chunk-1	::	%>%	col_guess	cols	read_csv	sample_frac
+unnamed-chunk-2	full_train	initial_split	testing	training	vfold_cv
+unnamed-chunk-3	::	%>%	~	all_nominal	all_numeric	all_outcomes	all_predictors	as.numeric	contains	has_role	ncessch	prep	recipe	sch_name	step_dummy	step_medianimpute	step_mutate	step_novel	step_nzv	step_unknown	train	tst_dt	update_role
+unnamed-chunk-4	%>%	add_model	add_recipe	boost_tree	collect_metrics	cv	fit_resamples	rec	set_engine	set_mode	workflow
+unnamed-chunk-5	%>%	cv	expand.grid	makeCluster	mod	registerDoParallel	seq	set_args	stopCluster	tune	tune_grid	update_model	wf_df
+unnamed-chunk-6	%>%	cv	expand.grid	finalize_model	makeCluster	registerDoParallel	select_best	seq	set_args	stopCluster	tune	tune_grid	tune_lr	tune_tree_lr	update_model	wf_df
+unnamed-chunk-7	%>%	cv	expand.grid	finalize_model	makeCluster	registerDoParallel	select_best	seq	set_args	stopCluster	tune	tune_depth	tune_grid	tune_tree_depth	update_model	wf_df
+unnamed-chunk-8	%>%	cv	finalize	finalize_model	grid_max_entropy	juice	makeCluster	mtry	prep	rec	registerDoParallel	sample_prop	select_best	set_args	stopCluster	tune	tune_grid	tune_reg	tune_tree_reg	update_model	wf_df
+unnamed-chunk-9	show_best	tune_tree_rand
+unnamed-chunk-10	%>%	finalize_model	select_best	tune_rand	tune_tree_rand	update_model	wf_df
+unnamed-chunk-11	$	last_fit	registerDoSEQ	splt	wf_final
+unnamed-chunk-12	::	$	col_guess	cols	fit	predict	read_csv	tibble	train	wf_final	write_csv
+>>>>>>> 1f827d5d070ac5e5b9d772a72cb77c08b482b860
