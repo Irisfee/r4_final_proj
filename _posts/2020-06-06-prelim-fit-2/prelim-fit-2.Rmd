@@ -195,7 +195,7 @@ finalized_fit$.metrics
 ### make predictions about the new testing set 
 
 ```{r, eval = TRUE}
-real_test <-  read_csv( here::here("data", "final_merged_test.csv"),
+real_test <-  read_csv(here::here("data", "final_merged_test.csv"),
                        col_types = cols(.default = col_guess())) 
 
 # fit full training 

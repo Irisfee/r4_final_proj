@@ -1,0 +1,98 @@
+[
+  {
+    "path": "posts/2020-06-09-model-comparison/",
+    "title": "Model-Comparison",
+    "description": "This post demonstrates the rationales for choosing our final model",
+    "author": [
+      {
+        "name": "Bernice Cheung, Peeta Li, Yufei Zhao",
+        "url": {}
+      }
+    ],
+    "date": "2020-06-09",
+    "categories": [],
+    "preview": {},
+    "last_modified": "2020-06-09T23:41:04-07:00",
+    "input_file": {}
+  },
+  {
+    "path": "posts/2020-06-09-prelim-fit-3/",
+    "title": "prelim fit 3",
+    "description": "In this post, we used stochastic gradient boosting with trees to train a model to predict scores",
+    "author": [
+      {
+        "name": "Bernice Cheung, Peeta Li, Yufei Zhao",
+        "url": {}
+      }
+    ],
+    "date": "2020-06-09",
+    "categories": [],
+    "preview": {},
+    "last_modified": "2020-06-10T15:32:28-07:00",
+    "input_file": {}
+  },
+  {
+    "path": "posts/2020-06-07-description-of-the-data/",
+    "title": "Description of the data",
+    "description": "In this post, we will discuss how we select predictors used in our model to predicor individual math score. In addition to the original training set, we selected and merged a few extra predictors that are at higher levels, including staff info, school characteristic, lunch eligibility, directory and membership. The exact procedure and rationale behind choosing those predictors are discussed below. \\\nNote that this post only discuss the procedure by which we build up our training set. This post does not include details on feature enginerring. The details of building recipes can be found in each prelim fit post individually.",
+    "author": [
+      {
+        "name": "Peeta Li, Yufei Zhao, Bernice Cheung",
+        "url": "https://example.com/norajones"
+      }
+    ],
+    "date": "2020-06-07",
+    "categories": [],
+    "preview": "posts/2020-06-07-description-of-the-data/description-of-the-data_files/figure-html5/unnamed-chunk-6-1.png",
+    "last_modified": "2020-06-09T16:19:08-07:00",
+    "input_file": {}
+  },
+  {
+    "path": "posts/2020-06-06-prelim-fit-1/",
+    "title": "Prelim fit 1",
+    "description": "In this post, we used penalty regression to train a model to predict scores",
+    "author": [
+      {
+        "name": "Bernice, Peeta, Yufei",
+        "url": "https://irisfee.github.io/r4_final_proj/posts/2020-06-06-prelim-fit-1/"
+      }
+    ],
+    "date": "2020-06-06",
+    "categories": [],
+    "preview": "posts/2020-06-06-prelim-fit-1/prelim-fit-1_files/figure-html5/unnamed-chunk-3-1.png",
+    "last_modified": "2020-06-09T15:23:46-07:00",
+    "input_file": {}
+  },
+  {
+    "path": "posts/2020-06-06-prelim-fit-2/",
+    "title": "prelim fit 2",
+    "description": "In this post we used random forest to train a regression model that the final analytic dataset to predict individual math score.",
+    "author": [
+      {
+        "name": "Peeta Li, Yufei Zhao, Bernice Cheung",
+        "url": {}
+      }
+    ],
+    "date": "2020-06-06",
+    "categories": [],
+    "preview": "posts/2020-06-06-prelim-fit-2/prelim-fit-2_files/figure-html5/unnamed-chunk-8-1.png",
+    "last_modified": "2020-06-10T15:27:28-07:00",
+    "input_file": {}
+  },
+  {
+    "path": "posts/welcome/",
+    "title": "Welcome to Final Project",
+    "description": "Welcome to our new blog, Final Project. We hope you enjoy \nreading what we have to say!",
+    "author": [
+      {
+        "name": "Nora Jones",
+        "url": "https://example.com/norajones"
+      }
+    ],
+    "date": "2020-06-05",
+    "categories": [],
+    "preview": {},
+    "last_modified": "2020-06-06T23:02:36-07:00",
+    "input_file": {}
+  }
+]
