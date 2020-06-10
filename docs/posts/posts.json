@@ -12,7 +12,7 @@
     "date": "2020-06-09",
     "categories": [],
     "preview": {},
-    "last_modified": "2020-06-09T15:20:52-07:00",
+    "last_modified": "2020-06-10T01:07:17-07:00",
     "input_file": {}
   },
   {
@@ -28,8 +28,8 @@
     "date": "2020-06-07",
     "categories": [],
     "preview": "posts/2020-06-07-description-of-the-data/description-of-the-data_files/figure-html5/unnamed-chunk-6-1.png",
-    "last_modified": "2020-06-09T16:19:08-07:00",
-    "input_file": "description-of-the-data.utf8.md"
+    "last_modified": "2020-06-09T16:50:11-07:00",
+    "input_file": {}
   },
   {
     "path": "posts/2020-06-06-prelim-fit-1/",
@@ -44,7 +44,7 @@
     "date": "2020-06-06",
     "categories": [],
     "preview": "posts/2020-06-06-prelim-fit-1/prelim-fit-1_files/figure-html5/unnamed-chunk-3-1.png",
-    "last_modified": "2020-06-08T20:50:44-07:00",
+    "last_modified": "2020-06-09T16:48:04-07:00",
     "input_file": {}
   },
   {
@@ -53,15 +53,15 @@
     "description": "In this post we used random forest to train a regression model that the final analytic dataset to predict individual math score.",
     "author": [
       {
-        "name": "Peeta Li, Yufei Zhao, Bernice Cheung",
+        "name": "Peeta Li",
         "url": {}
       }
     ],
     "date": "2020-06-06",
     "categories": [],
     "preview": "posts/2020-06-06-prelim-fit-2/prelim-fit-2_files/figure-html5/unnamed-chunk-8-1.png",
-    "last_modified": "2020-06-09T16:01:17-07:00",
-    "input_file": "prelim-fit-2.utf8.md"
+    "last_modified": "2020-06-09T16:49:00-07:00",
+    "input_file": {}
   },
   {
     "path": "posts/welcome/",
@@ -76,7 +76,7 @@
     "date": "2020-06-05",
     "categories": [],
     "preview": {},
-    "last_modified": "2020-06-06T23:02:36-07:00",
+    "last_modified": "2020-06-09T16:49:07-07:00",
     "input_file": {}
   }
 ]
