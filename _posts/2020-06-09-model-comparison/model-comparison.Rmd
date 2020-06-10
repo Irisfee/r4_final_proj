@@ -1,0 +1,82 @@
+---
+title: "Model-Comparison"
+description: |
+  This post demonstrates the rationales for choosing our final model
+author:
+  - name: Bernice Cheung, Peeta Li, Yufei Zhao
+    url: {}
+date: 06-09-2020
+output:
+  distill::distill_article:
+    self_contained: false
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = FALSE)
+```
+
+Our team evaluated three models: Penalty Regress, Random Forest, and Stochastic Gradient Boosting Tree Model. All models were tuned for multiple hyperparameters and evaluated mainly based on the Root Mean Square Error when being fitted to the full training dataset. In addition, we also took into account the computational cost and the resistance to overfitting into consideration. We chose the Stochastic Gradient Boosting Tree Model to be our final model
+
+# Model Comparison
+
+## Penalty Regression
+
+### Final Model: 
+
+We tuned 2 regularization hyperparameters for this model: penalty and mixture. Based on the rmse outcome from the cross validation, the optimal hyperparameters are penalty = 0.0562, mixture = 0.375. 
+
+### Model Fit: 
+After fitting the final model to the full training set, the rmse is **89.1**
+
+### Model Evaluation: 
+
+* Pros:  
+  + This model requires the least amount of computing power and therefore we were able to tune the model with the entire training set.  
+  + This is the most interpretable model.  
+
+* Cons:  
+  + The data voilate some assumptions of the model, such as linearity between the dependent variable and independent variable.   
+  + This model had the worst model fit among the three models.
+
+## Random Forest: 
+
+### Final Model: 
+
+We tuned 2 hyperparameters for this model: m_try and min_n Based on the rmse outcome from the cross validation, the optimal hyperparameters are m_try = 20, min_n = 87. 
+
+### Model Fit: 
+After fitting the final model to the full training set, the rmse is **87.1**
+
+### Model Evaluation
+* Pros:  
+  + Even if we tuned the model with only 5% of the training data, it significately improves the prediction.  
+  + The gains in prediction is relatively cost efficient compared to the Stochastic Gradient Boosting Tree Model.  
+
+* Cons:  
+  + The model is less interpretable. 
+
+## Stochastic Gradient Boosting Tree Model
+
+### Final Model: 
+We tuned 5 hyperparameters for this model: learning rate, tree depth, loss_reduction for the regularization, the number of features(mtry) and the number of cases(sample_size) for the randomness. Based on the rmse outcome from the cross validation, the optimal hyperparameters are penalty = 0.0562, mixture = 0.375. 
+
+### Model Fit: 
+After fitting the final model to the full training set, the rmse is **...**
+
+### Model Evaluation
+* Pros:  
+  + It significately improves the prediction compared to the penalty regression model  
+  + With all 5 tuning hyperparameters, it tooks a more general approach to reduce the prediction error. 
+
+* Cons:  
+  + It took much more longer to tune the model and therefore we were only able to use 1% of the data to train the model. The hyperparameters may not be the most optimal.  
+  + Without properly tuned hyperparameters, it is prone to overfitting. 
+
+## Summary table
+
+Model | Data Proportion | RMSE
+:------:|:------:|:------:|
+Penalty Regression|100%|89.1
+Random Forest|5%|87.1
+Stochastic Gradient Boosting Tree Model|1%|xxx
+

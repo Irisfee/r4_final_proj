@@ -16,6 +16,22 @@
     "input_file": {}
   },
   {
+    "path": "posts/2020-06-09-model-comparison/",
+    "title": "Model-Comparison",
+    "description": "This post demonstrates the rationales for choosing our final model",
+    "author": [
+      {
+        "name": "Bernice Cheung, Peeta Li, Yufei Zhao",
+        "url": {}
+      }
+    ],
+    "date": "2020-06-09",
+    "categories": [],
+    "preview": {},
+    "last_modified": "2020-06-09T23:03:35-07:00",
+    "input_file": "model-comparison.utf8.md"
+  },
+  {
     "path": "posts/2020-06-07-description-of-the-data/",
     "title": "Description of the data",
     "description": "In this post, we will discuss how we select predictors used in our model to predicor individual math score. In addition to the original training set, we selected and merged a few extra predictors that are at higher levels, including staff info, school characteristic, lunch eligibility, directory and membership. The exact procedure and rationale behind choosing those predictors are discussed below. \\\nNote that this post only discuss the procedure by which we build up our training set. This post does not include details on feature enginerring. The details of building recipes can be found in each prelim fit post individually.",
