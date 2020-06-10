@@ -181,7 +181,7 @@ wf_final <- workflow() %>%
 ran_best
 ```
 
-### Fit the whole training split and look at the RMSE for the out of bag data
+### Fit the whole training split and test on the test split
 
 ```{r}
 # final fit 
@@ -193,7 +193,8 @@ finalized_fit$.metrics
 ```
 
 ### make predictions about the new testing set 
-```{r}
+
+```{r, eval = TRUE}
 real_test <-  read_csv(here::here("data", "final_merged_test.csv"),
                        col_types = cols(.default = col_guess())) 
 
