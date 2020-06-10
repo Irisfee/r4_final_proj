@@ -1,6 +1,8 @@
 unnamed-chunk-1	full_train
 unnamed-chunk-2	cv	splt	test	train
 unnamed-chunk-3	check	rec
+<<<<<<< HEAD
+=======
 unnamed-chunk-4	fit_default	mod	wf_df
 unnamed-chunk-5	cl	grd	tune_lr	tune_tree_lr	wf_tune_lr
 unnamed-chunk-6	cl	grd	tune_depth	tune_tree_depth	wf_tune_depth
@@ -10,3 +12,4 @@ unnamed-chunk-9
 unnamed-chunk-10	tune_final	wf_final
 unnamed-chunk-11	test_mod
 unnamed-chunk-12	
+>>>>>>> 1f827d5d070ac5e5b9d772a72cb77c08b482b860

@@ -13,9 +13,7 @@ output:
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(message = FALSE,
                       warning = FALSE,
-                      cache = TRUE,
                       echo = TRUE,
-                      cache.lazy = FALSE,
                       autodep = TRUE)
 
 library(tidyverse)
@@ -28,7 +26,7 @@ library(future)
 set.seed(060820)
 ```
 
-# Description of the current model
+## Description of the current model
 
 * Description of the current model and our rationales for selecting this model
   * We chose Stochastic gradient boosting with tree model for the present preliminary fit. This is a sequential fitting algorithm that improves the fit of a shallow decision tree model by a slow learning process guided by the stochastic gradient descent algorithm. 
@@ -48,7 +46,7 @@ We selected this model because this model doesn't assume linearity of the data, 
   * We evaluated the random forest model performance by looking at RMSE during cross-validation and the out-of-bag RMSE when fitting the whole training/testing splits.
 
 
-# Fit a stochastic gradient boosting with tree model using 10 fold cross-validation
+## Fit a stochastic gradient boosting with tree model using 10 fold cross-validation
 
 ### Prep the data
 
@@ -57,7 +55,7 @@ Import the final merged training data. Due to our limit in computing power. we o
 ```{r}
 full_train <- read_csv(here::here('data',"final_merged_train.csv"),
                        col_types = cols(.default = col_guess())) %>%
-  sample_frac(.01)
+  sample_frac(.05)
 ```
 
 Split the data into 10 folds with stratified outcome, because the outcome is not normally distributed 
@@ -106,10 +104,10 @@ check <- rec %>% prep()
 
 In order to evaluate the tuning parameters, we first fit the model with default hyperparameters and compute the average RMSE across 10 folds.
 
-```{r, cache = TRUE}
+```{r}
 # specify a stochastic gradient boosting tree model
 mod <- boost_tree() %>% 
-  set_engine("xgboost", nthread = 8) %>% 
+  set_engine("xgboost", nthread = 4) %>% 
   set_mode("regression")
 
 # create a workflow with the model and recipy set above
@@ -130,9 +128,9 @@ collect_metrics(fit_default)
 
 We started by tuning the learning rate. In order to tune the learning rate, we fix other hyperparameters. For example, we set a large number of trees and an early stopping rule to prevent overfitting. The typical range of the learning rate is from 0.001 to 0.3. Due to the limit in computing power, we rescrited our tuning range from 0.01 to 0.3. 
 
-```{r,cache = TRUE}
+```{r}
 
-cl <- makeCluster(8)
+cl <- makeCluster(4)
 registerDoParallel(cl)
 # incorporate the updated hyperparameters to the workflow
 tune_lr <- mod %>% 
@@ -157,9 +155,9 @@ stopCluster(cl)
 
 After we identify the learning rate that yield the lowest rmse, we incorporate it into the model. Then we started to tune the tree depth for the tree model. Out of the 3 tree related hyperparameters, we only tune tree depth because the optimized number of trees depends on tree depth and niminum n is not very relavent here since all trees are shallow. The normal range of tree depth is less than 9. 
 
-```{r,cache = TRUE}
+```{r}
 
-cl <- makeCluster(8)
+cl <- makeCluster(4)
 registerDoParallel(cl)
 # update the workflow with optimized learning rate and tuned tree_depth
 tune_depth <- tune_lr %>% 
@@ -182,9 +180,9 @@ stopCluster(cl)
 
 The loss reduction is one of the regularization hyperparameters. It controls the complexity of a given tree after it's been grown and keep the model from overfitting. The common range is 1-20
 
-```{r,cache = TRUE}
+```{r}
 
-cl <- makeCluster(8)
+cl <- makeCluster(4)
 registerDoParallel(cl)
 # update the workflow with optimized tree depth and tuned loss_reduction
 tune_reg <- tune_depth %>% 
@@ -207,9 +205,9 @@ stopCluster(cl)
 
 After we optimize the tree model, we tune the randomness of the model by tuning the proportion of cases for each tree(sample_size) and the number of features for each split (mtry).  The range of these parameters are determined by the total predictors in the sample and the total case in the training dataset. We built the grid with max entropy.
 
-```{r,cache = TRUE}
+```{r}
 
-cl <- makeCluster(8)
+cl <- makeCluster(4)
 registerDoParallel(cl)
 # update the workflow with optimized tuned loss_reduction and tuned mtry & sample_size
 tune_rand <- tune_reg %>%
@@ -238,6 +236,9 @@ stopCluster(cl)
 Now that we optimized the tree model, regularization and randomness, let's look at the model performance. 
 
 ```{r}
+show_best(tune_tree_lr, "rmse", n=1)
+show_best(tune_tree_depth, "rmse", n=1)
+show_best(tune_tree_reg, "rmse", n=1)
 show_best(tune_tree_rand, "rmse", n=1)
 ```
 
@@ -267,7 +268,7 @@ test_mod$.metrics
 
 ### make prediction about the test set
 
-```{r, eval = F}
+```{r}
 real_test <-  read_csv(here::here("data", "final_merged_test.csv"),
                        col_types = cols(.default = col_guess())) 
 

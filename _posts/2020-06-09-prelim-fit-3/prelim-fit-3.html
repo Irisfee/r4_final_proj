@@ -973,7 +973,7 @@
 </div>
 
 <div class="d-article">
-<h1 id="description-of-the-current-model">Description of the current model</h1>
+<h2 id="description-of-the-current-model">Description of the current model</h2>
 <ul>
 <li>Description of the current model and our rationales for selecting this model
 <ul>
@@ -999,14 +999,14 @@
 <li>We evaluated the random forest model performance by looking at RMSE during cross-validation and the out-of-bag RMSE when fitting the whole training/testing splits.</li>
 </ul></li>
 </ul>
-<h1 id="fit-a-stochastic-gradient-boosting-with-tree-model-using-10-fold-cross-validation">Fit a stochastic gradient boosting with tree model using 10 fold cross-validation</h1>
+<h2 id="fit-a-stochastic-gradient-boosting-with-tree-model-using-10-fold-cross-validation">Fit a stochastic gradient boosting with tree model using 10 fold cross-validation</h2>
 <h3 id="prep-the-data">Prep the data</h3>
 <p>Import the final merged training data. Due to our limit in computing power. we only include 5% of the cases</p>
 <div class="layout-chunk" data-layout="l-body">
 <pre class="r"><code>
 full_train &lt;- read_csv(here::here(&#39;data&#39;,&quot;final_merged_train.csv&quot;),
                        col_types = cols(.default = col_guess())) %&gt;%
-  sample_frac(.01)</code></pre>
+  sample_frac(.05)</code></pre>
 </div>
 <p>Split the data into 10 folds with stratified outcome, because the outcome is not normally distributed</p>
 <div class="layout-chunk" data-layout="l-body">
@@ -1066,7 +1066,7 @@ check &lt;- rec %&gt;% prep()</code></pre>
 <pre class="r"><code>
 # specify a stochastic gradient boosting tree model
 mod &lt;- boost_tree() %&gt;% 
-  set_engine(&quot;xgboost&quot;, nthread = 8) %&gt;% 
+  set_engine(&quot;xgboost&quot;, nthread = 4) %&gt;% 
   set_mode(&quot;regression&quot;)
 
 # create a workflow with the model and recipy set above
@@ -1083,15 +1083,15 @@ collect_metrics(fit_default)</code></pre>
 # A tibble: 2 x 5
   .metric .estimator   mean     n std_err
   &lt;chr&gt;   &lt;chr&gt;       &lt;dbl&gt; &lt;int&gt;   &lt;dbl&gt;
-1 rmse    standard   91.9      10  1.63  
-2 rsq     standard    0.375    10  0.0135</code></pre>
+1 rmse    standard   89.3      10  1.08  
+2 rsq     standard    0.411    10  0.0142</code></pre>
 </div>
 <h3 id="tune-hyperparameters">Tune hyperparameters</h3>
 <h4 id="learning-rate">Learning rate</h4>
 <p>We started by tuning the learning rate. In order to tune the learning rate, we fix other hyperparameters. For example, we set a large number of trees and an early stopping rule to prevent overfitting. The typical range of the learning rate is from 0.001 to 0.3. Due to the limit in computing power, we rescrited our tuning range from 0.01 to 0.3.</p>
 <div class="layout-chunk" data-layout="l-body">
 <pre class="r"><code>
-cl &lt;- makeCluster(8)
+cl &lt;- makeCluster(4)
 registerDoParallel(cl)
 # incorporate the updated hyperparameters to the workflow
 tune_lr &lt;- mod %&gt;% 
@@ -1114,7 +1114,7 @@ stopCluster(cl)</code></pre>
 <p>After we identify the learning rate that yield the lowest rmse, we incorporate it into the model. Then we started to tune the tree depth for the tree model. Out of the 3 tree related hyperparameters, we only tune tree depth because the optimized number of trees depends on tree depth and niminum n is not very relavent here since all trees are shallow. The normal range of tree depth is less than 9.</p>
 <div class="layout-chunk" data-layout="l-body">
 <pre class="r"><code>
-cl &lt;- makeCluster(8)
+cl &lt;- makeCluster(4)
 registerDoParallel(cl)
 # update the workflow with optimized learning rate and tuned tree_depth
 tune_depth &lt;- tune_lr %&gt;% 
@@ -1135,7 +1135,7 @@ stopCluster(cl)</code></pre>
 <p>The loss reduction is one of the regularization hyperparameters. It controls the complexity of a given tree after it’s been grown and keep the model from overfitting. The common range is 1-20</p>
 <div class="layout-chunk" data-layout="l-body">
 <pre class="r"><code>
-cl &lt;- makeCluster(8)
+cl &lt;- makeCluster(4)
 registerDoParallel(cl)
 # update the workflow with optimized tree depth and tuned loss_reduction
 tune_reg &lt;- tune_depth %&gt;% 
@@ -1156,7 +1156,7 @@ stopCluster(cl)</code></pre>
 <p>After we optimize the tree model, we tune the randomness of the model by tuning the proportion of cases for each tree(sample_size) and the number of features for each split (mtry). The range of these parameters are determined by the total predictors in the sample and the total case in the training dataset. We built the grid with max entropy.</p>
 <div class="layout-chunk" data-layout="l-body">
 <pre class="r"><code>
-cl &lt;- makeCluster(8)
+cl &lt;- makeCluster(4)
 registerDoParallel(cl)
 # update the workflow with optimized tuned loss_reduction and tuned mtry &amp; sample_size
 tune_rand &lt;- tune_reg %&gt;%
@@ -1181,12 +1181,33 @@ stopCluster(cl)</code></pre>
 <p>Now that we optimized the tree model, regularization and randomness, let’s look at the model performance.</p>
 <div class="layout-chunk" data-layout="l-body">
 <pre class="r"><code>
+show_best(tune_tree_lr, &quot;rmse&quot;, n=1)</code></pre>
+<pre><code>
+# A tibble: 1 x 6
+  learn_rate .metric .estimator  mean     n std_err
+       &lt;dbl&gt; &lt;chr&gt;   &lt;chr&gt;      &lt;dbl&gt; &lt;int&gt;   &lt;dbl&gt;
+1      0.005 rmse    standard    89.4    10    1.11</code></pre>
+<pre class="r"><code>
+show_best(tune_tree_depth, &quot;rmse&quot;, n=1)</code></pre>
+<pre><code>
+# A tibble: 1 x 6
+  tree_depth .metric .estimator  mean     n std_err
+       &lt;dbl&gt; &lt;chr&gt;   &lt;chr&gt;      &lt;dbl&gt; &lt;int&gt;   &lt;dbl&gt;
+1          3 rmse    standard    87.1    10    1.18</code></pre>
+<pre class="r"><code>
+show_best(tune_tree_reg, &quot;rmse&quot;, n=1)</code></pre>
+<pre><code>
+# A tibble: 1 x 6
+  loss_reduction .metric .estimator  mean     n std_err
+           &lt;dbl&gt; &lt;chr&gt;   &lt;chr&gt;      &lt;dbl&gt; &lt;int&gt;   &lt;dbl&gt;
+1             17 rmse    standard    87.1    10    1.18</code></pre>
+<pre class="r"><code>
 show_best(tune_tree_rand, &quot;rmse&quot;, n=1)</code></pre>
 <pre><code>
 # A tibble: 1 x 7
    mtry sample_size .metric .estimator  mean     n std_err
   &lt;int&gt;       &lt;dbl&gt; &lt;chr&gt;   &lt;chr&gt;      &lt;dbl&gt; &lt;int&gt;   &lt;dbl&gt;
-1    48       0.459 rmse    standard    87.2    10    1.23</code></pre>
+1    38       0.762 rmse    standard    86.6    10    1.20</code></pre>
 </div>
 <p>Update the workflow with all the hyperparameters after tuning</p>
 <div class="layout-chunk" data-layout="l-body">
@@ -1212,8 +1233,8 @@ test_mod$.metrics</code></pre>
 # A tibble: 2 x 3
   .metric .estimator .estimate
   &lt;chr&gt;   &lt;chr&gt;          &lt;dbl&gt;
-1 rmse    standard      89.9  
-2 rsq     standard       0.375</code></pre>
+1 rmse    standard      88.6  
+2 rsq     standard       0.439</code></pre>
 </div>
 <h3 id="make-prediction-about-the-test-set">make prediction about the test set</h3>
 <div class="layout-chunk" data-layout="l-body">
