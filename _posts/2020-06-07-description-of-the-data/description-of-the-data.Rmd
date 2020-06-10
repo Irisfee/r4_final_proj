@@ -231,7 +231,7 @@ df_forvip <- df %>%
 df_forvip <-  df_forvip  %>% 
   select(-ayp_dist_partic , -rc_dist_partic, -grp_rpt_dist_partic)
 
-vip(lm(score ~ ., df_forvip), mapping = aes(fill = Sign))
+#vip(lm(score ~ ., df_forvip), mapping = aes(fill = Sign))
 ```
 
 We saved this merged dataframe as our training set. 
@@ -245,7 +245,6 @@ The exact same procedure is be applied to the testing set, for which we will gen
 ```{r, eval = F}
 test <- import(here::here('data','test.csv')) %>% 
   mutate(ncessch = as.double(ncessch)) %>% 
-  select(-classification) %>%
   mutate(lang_cd = ifelse(is.na(lang_cd), "E", lang_cd),
          ayp_lep = ifelse(is.na(ayp_lep), "G", ayp_lep))
 
