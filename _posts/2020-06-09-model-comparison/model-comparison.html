@@ -973,7 +973,7 @@
 </div>
 
 <div class="d-article">
-<p>Our team evaluated three models: Penalty Regress, Random Forest, and Stochastic Gradient Boosting Tree Model. All models were tuned for multiple hyperparameters and evaluated mainly based on the Root Mean Square Error when being fitted to the full training dataset. In addition, we also took into account the computational cost and the resistance to overfitting into consideration. We chose the Stochastic Gradient Boosting Tree Model to be our final model</p>
+<p>Our team evaluated three models: Penalty Regress, Random Forest, and Stochastic Gradient Boosting Tree Model. All models were tuned for multiple hyperparameters and evaluated mainly based on the Root Mean Square Error when being fitted to the full training dataset. In addition, we also took into account the computational cost and the resistance to overfitting into consideration. We chose the Random Forest Model to be our final model</p>
 <h1 id="model-comparison">Model Comparison</h1>
 <h2 id="penalty-regression">Penalty Regression</h2>
 <h3 id="final-model">Final Model:</h3>
@@ -1015,9 +1015,9 @@
 </ul>
 <h2 id="stochastic-gradient-boosting-tree-model">Stochastic Gradient Boosting Tree Model</h2>
 <h3 id="final-model-2">Final Model:</h3>
-<p>We tuned 5 hyperparameters for this model: learning rate, tree depth, loss_reduction for the regularization, the number of features(mtry) and the number of cases(sample_size) for the randomness. Based on the rmse outcome from the cross validation, the optimal hyperparameters are penalty = 0.0562, mixture = 0.375.</p>
+<p>We tuned 5 hyperparameters for this model: learning rate, tree depth, loss_reduction for the regularization, the number of features(mtry) and the number of cases(sample_size) for the randomness. Based on the rmse outcome from the cross validation, the optimal hyperparameters are learning rate = 0.005, tree depth = 3, loss reduction = 17, mtry = 38, sample size = 0.762.</p>
 <h3 id="model-fit-2">Model Fit:</h3>
-<p>After fitting the final model to the full training set, the rmse is <strong>…</strong></p>
+<p>After fitting the final model to the full training set, the rmse is <strong>88.6</strong></p>
 <h3 id="model-evaluation-2">Model Evaluation</h3>
 <ul>
 <li>Pros:
@@ -1028,9 +1028,9 @@
 </ul></li>
 <li>Cons:
 <ul>
-<li>It took much more longer to tune the model and therefore we were only able to use 1% of the data to train the model. The hyperparameters may not be the most optimal.<br />
+<li>It took much more longer to tune the model and therefore we were only able to use 5% of the data to train the model. The hyperparameters may not be the most optimal.<br />
 </li>
-<li>Without properly tuned hyperparameters, it is prone to overfitting.</li>
+<li>Without properly tuned hyperparameters, it is prone to overfitting. But the tuning process is much more costly compared to the random forest model</li>
 </ul></li>
 </ul>
 <h2 id="summary-table">Summary table</h2>
@@ -1051,15 +1051,17 @@
 <tr class="even">
 <td style="text-align: center;">Random Forest</td>
 <td style="text-align: center;">5%</td>
-<td style="text-align: center;">87.1</td>
+<td style="text-align: center;">86.8</td>
 </tr>
 <tr class="odd">
 <td style="text-align: center;">Stochastic Gradient Boosting Tree Model</td>
-<td style="text-align: center;">1%</td>
-<td style="text-align: center;">xxx</td>
+<td style="text-align: center;">5%</td>
+<td style="text-align: center;">88.6</td>
 </tr>
 </tbody>
 </table>
+<h1 id="final-model-selection">Final model selection</h1>
+<p>We chose the random forest model as our final model because it is the most balanced model between prediction accuracy and computational cost among the 3 models.</p>
 <!--radix_placeholder_article_footer-->
 <!--/radix_placeholder_article_footer-->
 </div>
